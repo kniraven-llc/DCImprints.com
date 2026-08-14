@@ -1,0 +1,629 @@
+/* ==========================================================================
+   Lightweight whole-page seasonal effects
+   ========================================================================== */
+
+.dc-seasonal-effects {
+    position: fixed;
+    inset: 0;
+    z-index: 1018;
+    overflow: hidden;
+    pointer-events: none;
+    contain: layout paint style;
+    isolation: isolate;
+}
+
+.dc-seasonal-effects.is-paused *,
+.dc-seasonal-effects.is-paused canvas {
+    animation-play-state: paused !important;
+}
+
+.dc-seasonal-effects__canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.dc-seasonal-particle {
+    position: absolute;
+    display: block;
+    margin: 0;
+    padding: 0;
+    color: var(
+        --particle-color,
+        rgba(255, 255, 255, 0.82)
+    );
+    opacity: var(--particle-opacity, 0.75);
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+}
+
+/* Snow */
+
+.dc-seasonal-particle--snow {
+    top: -12vh;
+    left: 0;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+    font-size: var(--particle-size);
+    line-height: 1;
+    text-shadow:
+        0 0 0.4rem
+        rgba(255, 255, 255, 0.35);
+    animation:
+        dc-seasonal-fall
+        var(--particle-duration)
+        linear
+        var(--particle-delay)
+        infinite;
+}
+
+/* Autumn leaves */
+
+.dc-seasonal-particle--leaf {
+    top: -12vh;
+    left: 0;
+    width: var(--particle-size);
+    height:
+        calc(
+            var(--particle-size)
+            * 0.72
+        );
+    border-radius:
+        75% 8% 75% 8%;
+    background:
+        currentColor;
+    box-shadow:
+        inset -0.12rem -0.08rem
+        rgba(0, 0, 0, 0.12);
+    animation:
+        dc-seasonal-leaf-fall
+        var(--particle-duration)
+        ease-in-out
+        var(--particle-delay)
+        infinite;
+}
+
+/* Spring petals */
+
+.dc-seasonal-particle--petal {
+    top: -12vh;
+    left: 0;
+    width: var(--particle-size);
+    height:
+        calc(
+            var(--particle-size)
+            * 0.58
+        );
+    border-radius:
+        80% 12% 80% 12%;
+    background:
+        currentColor;
+    box-shadow:
+        0 0.15rem 0.45rem
+        rgba(40, 55, 40, 0.1);
+    animation:
+        dc-seasonal-petal-fall
+        var(--particle-duration)
+        ease-in-out
+        var(--particle-delay)
+        infinite;
+}
+
+/* Valentine hearts */
+
+.dc-seasonal-particle--heart {
+    bottom: -12vh;
+    left: 0;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+    font-size: var(--particle-size);
+    line-height: 1;
+    text-shadow:
+        0 0.25rem 0.7rem
+        rgba(95, 20, 47, 0.16);
+    animation:
+        dc-seasonal-rise
+        var(--particle-duration)
+        ease-in
+        var(--particle-delay)
+        infinite;
+}
+
+/* Christmas twinkles */
+
+.dc-seasonal-particle--twinkle {
+    top: var(--particle-y);
+    left: var(--particle-x);
+    color:
+        var(
+            --particle-color,
+            #f7da8e
+        );
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+    font-size: var(--particle-size);
+    line-height: 1;
+    text-shadow:
+        0 0 0.65rem
+        currentColor;
+    animation:
+        dc-seasonal-twinkle
+        var(--particle-duration)
+        ease-in-out
+        var(--particle-delay)
+        infinite;
+}
+
+/* Halloween bats */
+
+.dc-seasonal-effects--bats::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            circle at 82% 13%,
+            rgba(211, 197, 225, 0.07),
+            transparent 16rem
+        ),
+        linear-gradient(
+            180deg,
+            rgba(35, 20, 47, 0.055),
+            transparent 34%
+        );
+}
+
+.dc-seasonal-particle--bat {
+    top: var(--particle-y);
+    left: 0;
+    width: var(--particle-size);
+    color:
+        rgba(24, 13, 31, 0.64);
+    filter:
+        drop-shadow(
+            0 0.3rem 0.4rem
+            rgba(0, 0, 0, 0.12)
+        );
+    animation:
+        dc-seasonal-bat-flight
+        var(--particle-duration)
+        ease-in-out
+        var(--particle-delay)
+        infinite;
+}
+
+.dc-seasonal-particle--bat svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    fill: currentColor;
+}
+
+/* Motion */
+
+@keyframes dc-seasonal-fall {
+    from {
+        transform:
+            translate3d(
+                var(--particle-x),
+                -12vh,
+                0
+            )
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            translate3d(
+                calc(
+                    var(--particle-x)
+                    + var(--particle-drift)
+                ),
+                112vh,
+                0
+            )
+            rotate(
+                var(--particle-rotation)
+            );
+    }
+}
+
+@keyframes dc-seasonal-leaf-fall {
+    0% {
+        transform:
+            translate3d(
+                var(--particle-x),
+                -12vh,
+                0
+            )
+            rotate(0deg);
+    }
+
+    32% {
+        transform:
+            translate3d(
+                calc(
+                    var(--particle-x)
+                    + var(--particle-sway)
+                ),
+                31vh,
+                0
+            )
+            rotate(135deg);
+    }
+
+    67% {
+        transform:
+            translate3d(
+                calc(
+                    var(--particle-x)
+                    - var(--particle-sway)
+                ),
+                69vh,
+                0
+            )
+            rotate(285deg);
+    }
+
+    100% {
+        transform:
+            translate3d(
+                calc(
+                    var(--particle-x)
+                    + var(--particle-drift)
+                ),
+                112vh,
+                0
+            )
+            rotate(
+                var(--particle-rotation)
+            );
+    }
+}
+
+@keyframes dc-seasonal-petal-fall {
+    0% {
+        transform:
+            translate3d(
+                var(--particle-x),
+                -12vh,
+                0
+            )
+            rotate(12deg);
+    }
+
+    35% {
+        transform:
+            translate3d(
+                calc(
+                    var(--particle-x)
+                    + var(--particle-sway)
+                ),
+                35vh,
+                0
+            )
+            rotate(155deg);
+    }
+
+    70% {
+        transform:
+            translate3d(
+                calc(
+                    var(--particle-x)
+                    - var(--particle-sway)
+                ),
+                72vh,
+                0
+            )
+            rotate(260deg);
+    }
+
+    100% {
+        transform:
+            translate3d(
+                calc(
+                    var(--particle-x)
+                    + var(--particle-drift)
+                ),
+                112vh,
+                0
+            )
+            rotate(
+                var(--particle-rotation)
+            );
+    }
+}
+
+@keyframes dc-seasonal-rise {
+    0% {
+        opacity: 0;
+        transform:
+            translate3d(
+                var(--particle-x),
+                12vh,
+                0
+            )
+            scale(0.78)
+            rotate(-8deg);
+    }
+
+    14% {
+        opacity:
+            var(
+                --particle-opacity,
+                0.65
+            );
+    }
+
+    86% {
+        opacity:
+            var(
+                --particle-opacity,
+                0.65
+            );
+    }
+
+    100% {
+        opacity: 0;
+        transform:
+            translate3d(
+                calc(
+                    var(--particle-x)
+                    + var(--particle-drift)
+                ),
+                -112vh,
+                0
+            )
+            scale(1.08)
+            rotate(
+                var(--particle-rotation)
+            );
+    }
+}
+
+@keyframes dc-seasonal-twinkle {
+    0%,
+    100% {
+        opacity: 0.12;
+        transform:
+            scale(0.65)
+            rotate(0deg);
+    }
+
+    48% {
+        opacity:
+            var(
+                --particle-opacity,
+                0.72
+            );
+        transform:
+            scale(1.12)
+            rotate(45deg);
+    }
+}
+
+@keyframes dc-seasonal-bat-flight {
+    0% {
+        opacity: 0;
+        transform:
+            translate3d(
+                var(--particle-from-x),
+                0,
+                0
+            )
+            scale(
+                var(--particle-scale)
+            )
+            rotate(-3deg);
+    }
+
+    10% {
+        opacity:
+            var(
+                --particle-opacity,
+                0.55
+            );
+    }
+
+    48% {
+        transform:
+            translate3d(
+                50vw,
+                var(--particle-drift-y),
+                0
+            )
+            scale(
+                var(--particle-scale)
+            )
+            rotate(5deg);
+    }
+
+    90% {
+        opacity:
+            var(
+                --particle-opacity,
+                0.55
+            );
+    }
+
+    100% {
+        opacity: 0;
+        transform:
+            translate3d(
+                var(--particle-to-x),
+                0,
+                0
+            )
+            scale(
+                var(--particle-scale)
+            )
+            rotate(-4deg);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .dc-seasonal-effects {
+        z-index: 1016;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dc-seasonal-effects {
+        display: none !important;
+    }
+}
+
+@media print {
+    .dc-seasonal-effects {
+        display: none !important;
+    }
+}
+
+/* Halloween ghosts */
+
+.dc-seasonal-effects--ghosts::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            circle at 82% 13%,
+            rgba(222, 215, 237, 0.1),
+            transparent 17rem
+        ),
+        linear-gradient(
+            180deg,
+            rgba(42, 30, 53, 0.06),
+            transparent 38%
+        );
+}
+
+.dc-seasonal-particle--ghost {
+    top: var(--particle-y);
+    left: 0;
+    width: var(--particle-size);
+    opacity: var(--particle-opacity, 0.34);
+    color: rgba(244, 241, 250, 0.9);
+    filter:
+        drop-shadow(
+            0 0.45rem 0.75rem
+            rgba(18, 8, 26, 0.22)
+        );
+    animation:
+        dc-seasonal-ghost-drift
+        var(--particle-duration)
+        ease-in-out
+        var(--particle-delay)
+        infinite;
+}
+
+.dc-seasonal-particle--ghost svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.dc-seasonal-ghost__body {
+    fill: currentColor;
+}
+
+.dc-seasonal-ghost__eye {
+    fill: rgba(39, 27, 48, 0.82);
+}
+
+.dc-seasonal-ghost__mouth {
+    fill: rgba(59, 40, 70, 0.66);
+}
+
+@keyframes dc-seasonal-ghost-drift {
+    0% {
+        opacity: 0;
+        transform:
+            translate3d(
+                var(--particle-from-x),
+                0,
+                0
+            )
+            scaleX(
+                var(--particle-direction)
+            )
+            rotate(-3deg);
+    }
+
+    12% {
+        opacity: var(--particle-opacity, 0.34);
+    }
+
+    30% {
+        transform:
+            translate3d(
+                var(--particle-quarter-x),
+                calc(
+                    var(--particle-drift-y)
+                    - 2vh
+                ),
+                0
+            )
+            scaleX(
+                var(--particle-direction)
+            )
+            rotate(2deg);
+    }
+
+    55% {
+        transform:
+            translate3d(
+                50vw,
+                var(--particle-drift-y),
+                0
+            )
+            scaleX(
+                var(--particle-direction)
+            )
+            rotate(-2deg);
+    }
+
+    78% {
+        transform:
+            translate3d(
+                var(--particle-three-quarter-x),
+                calc(
+                    var(--particle-drift-y)
+                    + 1.5vh
+                ),
+                0
+            )
+            scaleX(
+                var(--particle-direction)
+            )
+            rotate(2deg);
+    }
+
+    88% {
+        opacity: var(--particle-opacity, 0.34);
+    }
+
+    100% {
+        opacity: 0;
+        transform:
+            translate3d(
+                var(--particle-to-x),
+                0,
+                0
+            )
+            scaleX(
+                var(--particle-direction)
+            )
+            rotate(-3deg);
+    }
+}

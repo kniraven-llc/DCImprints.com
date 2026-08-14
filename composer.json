@@ -1,0 +1,14 @@
+{
+    "name": "kniraven/dcimprints.com",
+    "description": "Custom PHP website for DC Imprints.",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "ext-fileinfo": "*",
+        "ext-mbstring": "*",
+        "ext-pdo": "*"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

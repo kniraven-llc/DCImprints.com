@@ -1,0 +1,147 @@
+Folder PATH listing for volume Kniraven
+Volume serial number is 000000BF F696:91E7
+K:.
+|   .env
+|   .env.example
+|   .gitignore
+|   apply-seasonal-effect-tuning.php
+|   composer.json
+|   DC Imprints Website Rebuild Estimate.pdf
+|   README.md
+|   update-file-structure.bat
+|   
++---app
+|   |   authentication.php
+|   |   bootstrap.php
+|   |   content.before-sasquatch-sienna.php
+|   |   content.php
+|   |   database.php
+|   |   functions.php
+|   |   mailer.php
+|   |   promotions.php
+|   |   uploads.php
+|   |   validation.php
+|   |   
+|   \---layout
+|           admin-footer.php
+|           admin-header.php
+|           footer.php
+|           header.php
+|           promotions.php
+|           
++---config
+|       app.php
+|       database.php
+|       mail.php
+|       
++---database
+|   |   schema.sql
+|   |   
+|   \---migrations
+|           20260723_create_promotions.sql
+|           20260724_add_seasonal_promotion_themes.sql
+|           
++---public
+|   |   .htaccess
+|   |   404.php
+|   |   favicon.ico
+|   |   index.php
+|   |   robots.txt
+|   |   sitemap.xml
+|   |   
+|   +---admin
+|   |   |   index.php
+|   |   |   
+|   |   +---login
+|   |   |       index.php
+|   |   |       
+|   |   \---partials
+|   |           about-staff.php
+|   |           account.php
+|   |           catalogs-partners.php
+|   |           cta.php
+|   |           footer.php
+|   |           hero.php
+|   |           location.php
+|   |           promotions.php
+|   |           quote-form.php
+|   |           reviews.php
+|   |           services.php
+|   |           site-settings.php
+|   |           theme.php
+|   |           _shared.php
+|   |           
+|   +---assets
+|   |   +---css
+|   |   |       admin.css
+|   |   |       promotions.css
+|   |   |       seasonal-effects.css
+|   |   |       site.css
+|   |   |       themes.before-contrast-fix.css
+|   |   |       themes.css
+|   |   |       
+|   |   +---images
+|   |   |   +---brand
+|   |   |   |       .gitkeep
+|   |   |   |       
+|   |   |   +---content
+|   |   |   |       .gitkeep
+|   |   |   |       
+|   |   |   \---partners
+|   |   +---js
+|   |   |       admin.js
+|   |   |       promotions.js
+|   |   |       seasonal-effects.js
+|   |   |       site.js
+|   |   |       
+|   |   \---video
+|   \---uploads
+|       |   .htaccess
+|       |   
+|       +---content
+|       |   |   .gitkeep
+|       |   |   
+|       |   +---icons
+|       |   |       20260804-043801-eb9063d663315773.png
+|       |   |       
+|       |   +---images
+|       |   |       20260804-043740-4b7af43750980ed7.png
+|       |   |       20260804-233140-0b6da643e337205b.png
+|       |   |       20260805-011655-359c9497e7e05dda.png
+|       |   |       20260805-011709-a1e24a9bd5639bda.png
+|       |   |       20260805-011732-676f7509460a76ef.png
+|       |   |       20260805-011746-9cb2dc796b456f2e.png
+|       |   |       20260805-011759-c775a38bb5e06edf.png
+|       |   |       20260805-011827-5a5da8017db4fd28.png
+|       |   |       20260805-013204-2f18ffbcd3e57009.png
+|       |   |       20260805-013826-3571a7d4cf28cbf7.png
+|       |   |       20260805-014107-c576049beefa3db4.png
+|       |   |       20260805-014226-fec785367c72b4c6.png
+|       |   |       20260805-032413-d4fa5c44616b01e9.png
+|       |   |       20260805-032533-9387453067484007.png
+|       |   |       20260805-032628-98057ae410c8cb73.png
+|       |   |       20260805-032729-7b35727254540cae.png
+|       |   |       20260805-032822-934e4c8b8ebe7484.png
+|       |   |       20260805-032921-7e872efda61fc853.png
+|       |   |       20260805-033034-27988093decf2462.png
+|       |   |       20260805-033124-db14ac1a32208669.png
+|       |   |       20260805-033226-42dce65eec376feb.png
+|       |   |       20260805-033346-6f6bf6ace6c7e677.png
+|       |   |       20260805-033527-055f1d49ea6d7b1d.png
+|       |   |       20260805-033620-e6360d7fa0256f0a.png
+|       |   |       20260805-033722-2137a40b04d654da.png
+|       |   |       20260805-033834-64e434acb0bc1a64.png
+|       |   |       20260805-033929-f2acfed7cdf121de.png
+|       |   |       
+|       |   \---video
+|       |           20260804-233153-7a2c56c6244ba181.mp4
+|       |           
+|       \---gallery
+|               .gitkeep
+|               
+\---storage
+    \---logs
+            .gitkeep
+            app.log
+            homepage-test.html
+            

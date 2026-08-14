@@ -1,0 +1,1137 @@
+/* ==========================================================================
+   DC Imprints promotion features
+   ========================================================================== */
+
+.dc-promotion-announcement {
+    position: relative;
+    z-index: 1020;
+    padding-top: var(--dc-header-height);
+    color: #fff;
+    background: var(--dc-footer-background);
+}
+
+.dc-promotion-announcement__bar {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    background:
+        linear-gradient(
+            100deg,
+            var(--dc-brown-dark),
+            var(--dc-brown)
+        );
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.14);
+}
+
+.dc-promotion-announcement__content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 4.25rem;
+    padding-block: 0.7rem;
+}
+
+.dc-promotion-announcement__icon {
+    display: grid;
+    flex: 0 0 2.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.dc-promotion-announcement__icon svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    fill: currentColor;
+}
+
+.dc-promotion-announcement__copy {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: baseline;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.dc-promotion-announcement__copy strong {
+    flex: 0 0 auto;
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
+}
+
+.dc-promotion-announcement__copy span {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 0.88rem;
+}
+
+.dc-promotion-announcement__link {
+    flex: 0 0 auto;
+    color: #fff;
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.dc-promotion-announcement__link:hover,
+.dc-promotion-announcement__link:focus-visible {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.dc-promotion-announcement__close {
+    display: grid;
+    flex: 0 0 2rem;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    place-items: center;
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.dc-promotion-announcement__close:hover,
+.dc-promotion-announcement__close:focus-visible {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.dc-promotion-seasonal {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(2.5rem, 6vw, 5rem);
+    color: #fff;
+    background:
+        radial-gradient(
+            circle at 12% 20%,
+            rgba(255, 255, 255, 0.17),
+            transparent 26%
+        ),
+        radial-gradient(
+            circle at 88% 75%,
+            rgba(255, 255, 255, 0.12),
+            transparent 28%
+        ),
+        linear-gradient(
+            125deg,
+            var(--dc-brown-dark),
+            var(--dc-brown)
+        );
+}
+
+.dc-promotion-seasonal__decoration {
+    position: absolute;
+    inset: 0;
+    opacity: 0.18;
+    background-image:
+        linear-gradient(
+            45deg,
+            transparent 46%,
+            rgba(255, 255, 255, 0.32) 47%,
+            rgba(255, 255, 255, 0.32) 49%,
+            transparent 50%
+        );
+    background-size: 3rem 3rem;
+    pointer-events: none;
+}
+
+.dc-promotion-seasonal__panel {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 1.5rem;
+    background: rgba(0, 0, 0, 0.13);
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.16);
+    backdrop-filter: blur(8px);
+}
+
+.dc-promotion-seasonal__mark {
+    display: grid;
+    width: clamp(4rem, 8vw, 6.5rem);
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+}
+
+.dc-promotion-seasonal__eyebrow {
+    margin-bottom: 0.55rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.dc-promotion-seasonal__title {
+    margin-bottom: 0.65rem;
+    color: #fff;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.05;
+}
+
+.dc-promotion-seasonal__message {
+    max-width: 52rem;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+.dc-promotion-seasonal__action {
+    flex: 0 0 auto;
+}
+
+.dc-promotion-special-trigger {
+    position: fixed;
+    right: clamp(1rem, 3vw, 2rem);
+    bottom: clamp(1rem, 3vw, 2rem);
+    z-index: 1025;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.8rem;
+    max-width: min(24rem, calc(100vw - 2rem));
+    padding: 0.75rem 1rem 0.75rem 0.75rem;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background:
+        linear-gradient(
+            120deg,
+            var(--dc-brown-dark),
+            var(--dc-brown)
+        );
+    box-shadow:
+        0 1rem 2.5rem rgba(0, 0, 0, 0.24),
+        0 0 0 0.25rem rgba(255, 255, 255, 0.08);
+    text-align: left;
+    transition:
+        transform 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.dc-promotion-special-trigger:hover,
+.dc-promotion-special-trigger:focus-visible {
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow:
+        0 1.25rem 3rem rgba(0, 0, 0, 0.3),
+        0 0 0 0.25rem rgba(255, 255, 255, 0.12);
+}
+
+.dc-promotion-special-trigger__badge {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--dc-brown-dark);
+    font-size: 1.15rem;
+    font-weight: 900;
+}
+
+.dc-promotion-special-trigger__copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.dc-promotion-special-trigger__copy span {
+    color: rgba(255, 255, 255, 0.74);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.dc-promotion-special-trigger__copy strong {
+    overflow: hidden;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dc-promotion-special-trigger__arrow {
+    font-size: 1.25rem;
+}
+
+.dc-promotion-special-drawer {
+    --bs-offcanvas-width: min(31rem, 94vw);
+    color: var(--dc-charcoal);
+    background: var(--dc-page-background);
+}
+
+.dc-promotion-special-drawer__hero {
+    min-height: 14rem;
+    color: #fff;
+    background:
+        radial-gradient(
+            circle at 80% 25%,
+            rgba(255, 255, 255, 0.22),
+            transparent 24%
+        ),
+        linear-gradient(
+            135deg,
+            var(--dc-brown-dark),
+            var(--dc-brown)
+        );
+}
+
+.dc-promotion-special-drawer__label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.dc-promotion-special-drawer__symbol {
+    display: grid;
+    min-height: 9rem;
+    place-items: center;
+    font-size: 7rem;
+    font-weight: 900;
+    line-height: 1;
+    opacity: 0.18;
+}
+
+.dc-promotion-special-drawer__body {
+    padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.dc-promotion-special-drawer__eyebrow {
+    margin-bottom: 0.55rem;
+    color: var(--dc-brown);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.dc-promotion-special-drawer__title {
+    margin-bottom: 1rem;
+    color: var(--dc-charcoal);
+    font-size: clamp(2rem, 6vw, 3.25rem);
+    font-weight: 850;
+    line-height: 1;
+}
+
+.dc-promotion-special-drawer__message {
+    color: inherit;
+    font-size: 1.08rem;
+    line-height: 1.65;
+    opacity: 0.84;
+}
+
+.dc-promotion-important-modal .modal-dialog {
+    max-width: 42rem;
+}
+
+.dc-promotion-important-modal .modal-content {
+    overflow: hidden;
+    color: var(--dc-charcoal);
+    border: 0;
+    border-radius: 1.4rem;
+    background: var(--dc-page-background);
+    box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.34);
+}
+
+.dc-promotion-important-modal__header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: clamp(1.25rem, 4vw, 2rem);
+    color: #fff;
+    background:
+        linear-gradient(
+            125deg,
+            #61251d,
+            #9b3c2d
+        );
+}
+
+.dc-promotion-important-modal__icon {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.13);
+    font-size: 1.45rem;
+    font-weight: 900;
+}
+
+.dc-promotion-important-modal__eyebrow {
+    margin-bottom: 0.3rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.dc-promotion-important-modal .modal-title {
+    color: #fff;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.dc-promotion-important-modal .modal-body {
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+}
+
+.dc-promotion-important-modal__message {
+    margin: 0;
+    color: inherit;
+    font-size: 1.12rem;
+    line-height: 1.7;
+}
+
+.dc-promotion-important-modal .modal-footer {
+    padding:
+        0
+        clamp(1.5rem, 5vw, 2.5rem)
+        clamp(1.5rem, 5vw, 2.5rem);
+    border: 0;
+}
+
+body[data-theme="dc-dark"]
+.dc-promotion-special-drawer
+.btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+@media (max-width: 767.98px) {
+    .dc-promotion-announcement {
+        padding-top: var(--dc-header-height-compact);
+    }
+
+    .dc-promotion-announcement__content {
+        align-items: flex-start;
+        gap: 0.65rem;
+        padding-block: 0.85rem;
+    }
+
+    .dc-promotion-announcement__icon {
+        display: none;
+    }
+
+    .dc-promotion-announcement__copy {
+        flex-direction: column;
+        gap: 0.18rem;
+    }
+
+    .dc-promotion-announcement__link {
+        align-self: center;
+        font-size: 0.78rem;
+    }
+
+    .dc-promotion-seasonal__panel {
+        grid-template-columns: 1fr;
+    }
+
+    .dc-promotion-seasonal__mark {
+        width: 4rem;
+    }
+
+    .dc-promotion-seasonal__action {
+        width: 100%;
+    }
+
+    .dc-promotion-seasonal__action .btn {
+        width: 100%;
+    }
+
+    .dc-promotion-special-trigger {
+        right: 0.75rem;
+        bottom: 0.75rem;
+        left: 0.75rem;
+        max-width: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dc-promotion-special-trigger {
+        transition: none;
+    }
+}
+/* ==========================================================================
+   DC Imprints seasonal preset library
+   ========================================================================== */
+
+.dc-promotion-seasonal {
+    --seasonal-bg-start:
+        var(--dc-brown-dark);
+
+    --seasonal-bg-end:
+        var(--dc-brown);
+
+    --seasonal-accent:
+        #f3d9b7;
+
+    --seasonal-accent-strong:
+        #ffffff;
+
+    --seasonal-text:
+        #ffffff;
+
+    --seasonal-muted:
+        rgba(255, 255, 255, 0.82);
+
+    --seasonal-panel:
+        rgba(0, 0, 0, 0.16);
+
+    --seasonal-panel-border:
+        rgba(255, 255, 255, 0.28);
+
+    --seasonal-mark-background:
+        rgba(255, 255, 255, 0.13);
+
+    --seasonal-button-background:
+        #ffffff;
+
+    --seasonal-button-color:
+        #3a2619;
+
+    --seasonal-button-hover:
+        #f5eadc;
+
+    --seasonal-pattern:
+        repeating-linear-gradient(
+            45deg,
+            transparent 0,
+            transparent 2rem,
+            rgba(255, 255, 255, 0.09) 2rem,
+            rgba(255, 255, 255, 0.09) 2.08rem
+        );
+
+    --seasonal-pattern-size:
+        auto;
+
+    position: relative;
+    overflow: hidden;
+    color: var(--seasonal-text);
+    background:
+        radial-gradient(
+            circle at 10% 20%,
+            rgba(255, 255, 255, 0.15),
+            transparent 27%
+        ),
+        radial-gradient(
+            circle at 88% 74%,
+            rgba(255, 255, 255, 0.11),
+            transparent 30%
+        ),
+        linear-gradient(
+            125deg,
+            var(--seasonal-bg-start),
+            var(--seasonal-bg-end)
+        );
+    isolation: isolate;
+}
+
+.dc-promotion-seasonal__decoration {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    opacity: 1;
+    background-image:
+        var(--seasonal-pattern);
+    background-size:
+        var(--seasonal-pattern-size);
+    pointer-events: none;
+}
+
+.dc-promotion-seasonal__decoration::before,
+.dc-promotion-seasonal__decoration::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    pointer-events: none;
+}
+
+.dc-promotion-seasonal__decoration::before {
+    top: -8rem;
+    right: -6rem;
+    width: 24rem;
+    height: 24rem;
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+    background:
+        rgba(255, 255, 255, 0.04);
+}
+
+.dc-promotion-seasonal__decoration::after {
+    bottom: -11rem;
+    left: -7rem;
+    width: 28rem;
+    height: 28rem;
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+}
+
+.dc-promotion-seasonal__motif {
+    position: absolute;
+    color: var(--seasonal-accent);
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+    font-size:
+        clamp(4rem, 10vw, 9rem);
+    line-height: 1;
+    opacity: 0.12;
+    user-select: none;
+}
+
+.dc-promotion-seasonal__motif--a {
+    top: 5%;
+    left: 3%;
+    transform: rotate(-12deg);
+}
+
+.dc-promotion-seasonal__motif--b {
+    top: 12%;
+    right: 7%;
+    transform: rotate(14deg);
+}
+
+.dc-promotion-seasonal__motif--c {
+    right: 27%;
+    bottom: -8%;
+    transform: rotate(-6deg);
+}
+
+.dc-promotion-seasonal__panel {
+    position: relative;
+    display: grid;
+    grid-template-columns:
+        auto
+        minmax(0, 1fr)
+        auto;
+    align-items: center;
+    gap:
+        clamp(1.5rem, 4vw, 3rem);
+    padding:
+        clamp(1.5rem, 4vw, 3rem);
+    color: var(--seasonal-text);
+    border:
+        1px solid
+        var(--seasonal-panel-border);
+    border-radius: 1.5rem;
+    background:
+        var(--seasonal-panel);
+    box-shadow:
+        0 1.5rem 4rem
+        rgba(0, 0, 0, 0.17);
+    -webkit-backdrop-filter:
+        blur(9px);
+    backdrop-filter:
+        blur(9px);
+}
+
+.dc-promotion-seasonal__mark {
+    display: grid;
+    width:
+        clamp(4rem, 8vw, 6.5rem);
+    aspect-ratio: 1;
+    place-items: center;
+    color: var(--seasonal-accent-strong);
+    border:
+        1px solid
+        var(--seasonal-panel-border);
+    border-radius: 50%;
+    background:
+        var(--seasonal-mark-background);
+    box-shadow:
+        inset 0 0 0 0.35rem
+        rgba(255, 255, 255, 0.035);
+    font-size:
+        clamp(2rem, 5vw, 3.5rem);
+}
+
+.dc-promotion-seasonal__eyebrow {
+    color: var(--seasonal-muted);
+}
+
+.dc-promotion-seasonal__title {
+    color: var(--seasonal-text);
+}
+
+.dc-promotion-seasonal__message {
+    color: var(--seasonal-muted);
+}
+
+.dc-promotion-seasonal__button {
+    color:
+        var(--seasonal-button-color);
+    border-color:
+        var(--seasonal-button-background);
+    background:
+        var(--seasonal-button-background);
+    font-weight: 800;
+    box-shadow:
+        0 0.75rem 1.75rem
+        rgba(0, 0, 0, 0.15);
+    transition:
+        transform 180ms ease,
+        background-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.dc-promotion-seasonal__button:hover,
+.dc-promotion-seasonal__button:focus-visible {
+    color:
+        var(--seasonal-button-color);
+    border-color:
+        var(--seasonal-button-hover);
+    background:
+        var(--seasonal-button-hover);
+    transform:
+        translateY(-2px);
+    box-shadow:
+        0 1rem 2.25rem
+        rgba(0, 0, 0, 0.2);
+}
+
+/* Brand Seasonal */
+
+.dc-promotion-seasonal--default {
+    --seasonal-bg-start:
+        var(--dc-brown-dark);
+
+    --seasonal-bg-end:
+        var(--dc-brown);
+
+    --seasonal-accent:
+        var(--dc-brown-light);
+}
+
+/* Winter / New Year */
+
+.dc-promotion-seasonal--winter-new-year {
+    --seasonal-bg-start:
+        #0a2038;
+
+    --seasonal-bg-end:
+        #286786;
+
+    --seasonal-accent:
+        #c7efff;
+
+    --seasonal-accent-strong:
+        #ffffff;
+
+    --seasonal-muted:
+        rgba(235, 248, 255, 0.88);
+
+    --seasonal-panel:
+        rgba(4, 25, 43, 0.36);
+
+    --seasonal-button-color:
+        #12354a;
+
+    --seasonal-button-hover:
+        #d9f4ff;
+
+    --seasonal-pattern:
+        radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.52) 0 1px,
+            transparent 1.7px
+        );
+
+    --seasonal-pattern-size:
+        2.4rem 2.4rem;
+}
+
+/* Valentine’s Day */
+
+.dc-promotion-seasonal--valentines {
+    --seasonal-bg-start:
+        #58172d;
+
+    --seasonal-bg-end:
+        #b64d70;
+
+    --seasonal-accent:
+        #ffd0dd;
+
+    --seasonal-accent-strong:
+        #fff3f6;
+
+    --seasonal-muted:
+        rgba(255, 239, 244, 0.88);
+
+    --seasonal-panel:
+        rgba(67, 10, 31, 0.28);
+
+    --seasonal-button-color:
+        #681b37;
+
+    --seasonal-button-hover:
+        #ffe2ea;
+
+    --seasonal-pattern:
+        linear-gradient(
+            45deg,
+            transparent 46%,
+            rgba(255, 224, 233, 0.1) 47%,
+            rgba(255, 224, 233, 0.1) 53%,
+            transparent 54%
+        ),
+        linear-gradient(
+            -45deg,
+            transparent 46%,
+            rgba(255, 224, 233, 0.07) 47%,
+            rgba(255, 224, 233, 0.07) 53%,
+            transparent 54%
+        );
+
+    --seasonal-pattern-size:
+        4rem 4rem;
+}
+
+/* Spring / Easter */
+
+.dc-promotion-seasonal--spring-easter {
+    --seasonal-bg-start:
+        #315e50;
+
+    --seasonal-bg-end:
+        #83aa78;
+
+    --seasonal-accent:
+        #fff0b7;
+
+    --seasonal-accent-strong:
+        #fffbe9;
+
+    --seasonal-muted:
+        rgba(249, 255, 242, 0.9);
+
+    --seasonal-panel:
+        rgba(29, 73, 58, 0.24);
+
+    --seasonal-button-color:
+        #315e50;
+
+    --seasonal-button-hover:
+        #fff7d5;
+
+    --seasonal-pattern:
+        radial-gradient(
+            circle at center,
+            rgba(255, 240, 183, 0.18) 0 0.3rem,
+            transparent 0.34rem
+        );
+
+    --seasonal-pattern-size:
+        3.2rem 3.2rem;
+}
+
+/* Patriotic Summer */
+
+.dc-promotion-seasonal--patriotic-summer {
+    --seasonal-bg-start:
+        #0b2748;
+
+    --seasonal-bg-end:
+        #245c91;
+
+    --seasonal-accent:
+        #f7d6d1;
+
+    --seasonal-accent-strong:
+        #ffffff;
+
+    --seasonal-muted:
+        rgba(245, 249, 255, 0.88);
+
+    --seasonal-panel:
+        rgba(2, 22, 45, 0.34);
+
+    --seasonal-button-color:
+        #153b64;
+
+    --seasonal-button-hover:
+        #f9e3df;
+
+    --seasonal-pattern:
+        repeating-linear-gradient(
+            -35deg,
+            transparent 0,
+            transparent 2.25rem,
+            rgba(255, 255, 255, 0.07) 2.25rem,
+            rgba(255, 255, 255, 0.07) 3rem,
+            rgba(190, 45, 54, 0.13) 3rem,
+            rgba(190, 45, 54, 0.13) 3.75rem
+        );
+
+    --seasonal-pattern-size:
+        auto;
+}
+
+/* Graduation / School Spirit */
+
+.dc-promotion-seasonal--graduation {
+    --seasonal-bg-start:
+        #15213b;
+
+    --seasonal-bg-end:
+        #3a5782;
+
+    --seasonal-accent:
+        #f2c85b;
+
+    --seasonal-accent-strong:
+        #ffe7a0;
+
+    --seasonal-muted:
+        rgba(247, 250, 255, 0.88);
+
+    --seasonal-panel:
+        rgba(9, 20, 43, 0.31);
+
+    --seasonal-button-color:
+        #263756;
+
+    --seasonal-button-hover:
+        #fff0b9;
+
+    --seasonal-pattern:
+        radial-gradient(
+            circle,
+            rgba(242, 200, 91, 0.28) 0 0.12rem,
+            transparent 0.16rem
+        ),
+        linear-gradient(
+            65deg,
+            transparent 47%,
+            rgba(255, 255, 255, 0.09) 48%,
+            rgba(255, 255, 255, 0.09) 52%,
+            transparent 53%
+        );
+
+    --seasonal-pattern-size:
+        2.8rem 2.8rem,
+        4.6rem 4.6rem;
+}
+
+/* Back-to-School / Fall Sports */
+
+.dc-promotion-seasonal--back-to-school {
+    --seasonal-bg-start:
+        #173d30;
+
+    --seasonal-bg-end:
+        #a35d2c;
+
+    --seasonal-accent:
+        #f1d18c;
+
+    --seasonal-accent-strong:
+        #fff4d2;
+
+    --seasonal-muted:
+        rgba(255, 248, 231, 0.88);
+
+    --seasonal-panel:
+        rgba(23, 48, 38, 0.3);
+
+    --seasonal-button-color:
+        #304c3c;
+
+    --seasonal-button-hover:
+        #f8e5b8;
+
+    --seasonal-pattern:
+        repeating-linear-gradient(
+            115deg,
+            transparent 0,
+            transparent 2.6rem,
+            rgba(255, 255, 255, 0.09) 2.6rem,
+            rgba(255, 255, 255, 0.09) 2.75rem
+        );
+
+    --seasonal-pattern-size:
+        auto;
+}
+
+/* Halloween */
+
+.dc-promotion-seasonal--halloween {
+    --seasonal-bg-start:
+        #100c17;
+
+    --seasonal-bg-end:
+        #542066;
+
+    --seasonal-accent:
+        #ff9d3d;
+
+    --seasonal-accent-strong:
+        #ffc16f;
+
+    --seasonal-muted:
+        rgba(245, 230, 251, 0.86);
+
+    --seasonal-panel:
+        rgba(8, 5, 14, 0.46);
+
+    --seasonal-panel-border:
+        rgba(255, 157, 61, 0.29);
+
+    --seasonal-button-background:
+        #ff9d3d;
+
+    --seasonal-button-color:
+        #211125;
+
+    --seasonal-button-hover:
+        #ffb968;
+
+    --seasonal-pattern:
+        radial-gradient(
+            circle at 75% 22%,
+            rgba(255, 192, 108, 0.22) 0 2.7rem,
+            transparent 2.8rem
+        ),
+        repeating-radial-gradient(
+            circle at 15% 80%,
+            transparent 0,
+            transparent 1.4rem,
+            rgba(255, 255, 255, 0.045) 1.45rem,
+            transparent 1.5rem
+        );
+
+    --seasonal-pattern-size:
+        auto;
+}
+
+/* Thanksgiving / Harvest */
+
+.dc-promotion-seasonal--harvest {
+    --seasonal-bg-start:
+        #57261d;
+
+    --seasonal-bg-end:
+        #b05b2d;
+
+    --seasonal-accent:
+        #f3c77b;
+
+    --seasonal-accent-strong:
+        #ffe2a8;
+
+    --seasonal-muted:
+        rgba(255, 243, 219, 0.88);
+
+    --seasonal-panel:
+        rgba(79, 29, 17, 0.29);
+
+    --seasonal-button-color:
+        #64301e;
+
+    --seasonal-button-hover:
+        #ffe1a5;
+
+    --seasonal-pattern:
+        repeating-linear-gradient(
+            35deg,
+            transparent 0,
+            transparent 2.2rem,
+            rgba(255, 230, 178, 0.08) 2.2rem,
+            rgba(255, 230, 178, 0.08) 2.35rem
+        );
+
+    --seasonal-pattern-size:
+        auto;
+}
+
+/* Christmas / Holiday */
+
+.dc-promotion-seasonal--holiday-christmas {
+    --seasonal-bg-start:
+        #123b2a;
+
+    --seasonal-bg-end:
+        #8b2030;
+
+    --seasonal-accent:
+        #efd18a;
+
+    --seasonal-accent-strong:
+        #fff1bd;
+
+    --seasonal-muted:
+        rgba(255, 248, 229, 0.89);
+
+    --seasonal-panel:
+        rgba(7, 42, 28, 0.34);
+
+    --seasonal-button-color:
+        #254735;
+
+    --seasonal-button-hover:
+        #ffebae;
+
+    --seasonal-pattern:
+        radial-gradient(
+            circle,
+            rgba(255, 222, 135, 0.34) 0 0.14rem,
+            transparent 0.2rem
+        ),
+        repeating-linear-gradient(
+            45deg,
+            transparent 0,
+            transparent 2.7rem,
+            rgba(255, 255, 255, 0.055) 2.7rem,
+            rgba(255, 255, 255, 0.055) 2.85rem
+        );
+
+    --seasonal-pattern-size:
+        3.4rem 3.4rem,
+        auto;
+}
+
+@media (max-width: 767.98px) {
+    .dc-promotion-seasonal__motif {
+        font-size:
+            clamp(3rem, 18vw, 6rem);
+        opacity: 0.09;
+    }
+
+    .dc-promotion-seasonal__motif--c {
+        right: 4%;
+        bottom: 4%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dc-promotion-seasonal__button {
+        transition: none;
+    }
+
+    .dc-promotion-seasonal__button:hover,
+    .dc-promotion-seasonal__button:focus-visible {
+        transform: none;
+    }
+}
