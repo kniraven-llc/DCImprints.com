@@ -777,7 +777,11 @@ require APP_ROOT . '/app/layout/promotions.php';
                         <p><?= e($quoteFormIntro) ?></p>
 
                         <?php if ($success): ?>
-                            <div class="alert alert-success" role="status"><?= e($success) ?></div>
+                            <div
+                                class="alert alert-success"
+                                role="status"
+                                data-google-analytics-event="generate_lead"
+                            ><?= e($success) ?></div>
                         <?php endif; ?>
 
                         <?php if (isset($errors['form'])): ?>

@@ -27,6 +27,8 @@ document.addEventListener(
         initializeScrollReveals(
             reducedMotion
         );
+
+        initializeGoogleAnalyticsEvents();
     }
 );
 
@@ -614,4 +616,29 @@ function initializeScrollReveals(
             );
         }
     );
+}
+
+function initializeGoogleAnalyticsEvents() {
+    document
+        .querySelectorAll(
+            '[data-google-analytics-event]'
+        )
+        .forEach((element) => {
+            const eventName =
+                element.dataset
+                    .googleAnalyticsEvent;
+
+            if (
+                !eventName
+                || typeof window.gtag
+                    !== 'function'
+            ) {
+                return;
+            }
+
+            window.gtag(
+                'event',
+                eventName
+            );
+        });
 }
