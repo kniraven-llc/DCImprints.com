@@ -153,9 +153,9 @@ $faviconMime = trim(
  * has been configured in the environment.
  */
 $googleAnalyticsMeasurementId = trim(
-    (string) config(
-        'app.google_analytics_measurement_id',
-        ''
+    (string) (
+        $appConfig['google_analytics_measurement_id']
+        ?? ''
     )
 );
 
