@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/app/bootstrap.php';
 
+const DC_QUOTE_ATTACHMENT_MAX_BYTES = 2_999_999;
+
 /**
  * Validate an optional artwork attachment without permanently storing it.
  *
@@ -25,8 +27,8 @@ function dc_home_validate_artwork_upload(array $file): array
     $size = (int) ($file['size'] ?? 0);
     $temporaryPath = (string) ($file['tmp_name'] ?? '');
 
-    if ($size < 1 || $size > 10 * 1024 * 1024) {
-        return [null, 'Artwork must be 10 MB or smaller.'];
+    if ($size < 1 || $size > DC_QUOTE_ATTACHMENT_MAX_BYTES) {
+        return [null, 'Artwork must be smaller than 3 MB.'];
     }
 
     if (
@@ -65,97 +67,6 @@ function dc_home_validate_artwork_upload(array $file): array
         'mime' => $mime,
         'size' => $size,
     ], null];
-}
-
-/**
- * Send a quote request, optionally including an artwork attachment.
- *
- * @param array<string, mixed> $data
- * @param array{name:string,tmp_name:string,mime:string,size:int}|null $attachment
- */
-function dc_home_send_quote_email(
-    array $data,
-    ?array $attachment,
-    string $businessName
-): bool {
-    $config = require APP_ROOT . '/config/mail.php';
-
-    if (($config['recipient'] ?? '') === '') {
-        log_message('MAIL_TO is not configured; homepage quote form email was not sent.');
-        return false;
-    }
-
-    $cleanHeaderValue = static fn (string $value): string =>
-        str_replace(["\r", "\n"], ' ', trim($value));
-
-    $subject = 'Website quote request from ' . $cleanHeaderValue((string) $data['name']);
-    $body = implode(PHP_EOL, [
-        'Website: ' . $businessName,
-        'Name: ' . $data['name'],
-        'Email: ' . $data['email'],
-        'Phone: ' . ($data['phone'] !== '' ? $data['phone'] : 'Not provided'),
-        'Organization: ' . ($data['organization'] !== '' ? $data['organization'] : 'Not provided'),
-        'Service: ' . $data['service'],
-        'Design/logo assistance requested: ' . ($data['design_help'] ? 'Yes' : 'No'),
-        '',
-        'Project details:',
-        $data['message'],
-    ]);
-
-    $headers = [
-        'From: '
-            . $cleanHeaderValue((string) $config['from_name'])
-            . ' <'
-            . $cleanHeaderValue((string) $config['from_address'])
-            . '>',
-        'Reply-To: ' . $cleanHeaderValue((string) $data['email']),
-        'MIME-Version: 1.0',
-        'X-Mailer: PHP/' . PHP_VERSION,
-    ];
-
-    if ($attachment === null) {
-        $headers[] = 'Content-Type: text/plain; charset=UTF-8';
-        $message = $body;
-    } else {
-        $contents = file_get_contents($attachment['tmp_name']);
-
-        if ($contents === false) {
-            log_message('Artwork attachment could not be read for a quote request.');
-            return false;
-        }
-
-        $boundary = '=_dcimprints_' . bin2hex(random_bytes(16));
-        $headers[] = 'Content-Type: multipart/mixed; boundary="' . $boundary . '"';
-        $message = implode("\r\n", [
-            '--' . $boundary,
-            'Content-Type: text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding: 8bit',
-            '',
-            $body,
-            '',
-            '--' . $boundary,
-            'Content-Type: ' . $attachment['mime'] . '; name="' . $attachment['name'] . '"',
-            'Content-Disposition: attachment; filename="' . $attachment['name'] . '"',
-            'Content-Transfer-Encoding: base64',
-            '',
-            chunk_split(base64_encode($contents)),
-            '--' . $boundary . '--',
-            '',
-        ]);
-    }
-
-    $sent = mail(
-        (string) $config['recipient'],
-        $subject,
-        $message,
-        implode("\r\n", $headers)
-    );
-
-    if (!$sent) {
-        log_message('PHP mail() returned false for a homepage quote request.');
-    }
-
-    return $sent;
 }
 
 function dc_home_public_asset_exists(string $webPath): bool
@@ -490,7 +401,7 @@ if (is_post()) {
     }
 
     if ($errors === []) {
-        if (dc_home_send_quote_email($form, $artwork, $businessName)) {
+        if (send_quote_email($form, $artwork, $businessName)) {
             flash('success', 'Thank you. Your request has been sent.');
             redirect('/#contact');
         }
@@ -999,7 +910,7 @@ require APP_ROOT . '/app/layout/promotions.php';
                                         type="file"
                                         accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
                                     >
-                                    <div class="form-text">JPG, PNG, WebP, or PDF; maximum 10 MB.</div>
+                                    <div class="form-text">JPG, PNG, WebP, or PDF; maximum 3 MB.</div>
                                     <?php if (isset($errors['artwork'])): ?>
                                         <div class="invalid-feedback"><?= e($errors['artwork']) ?></div>
                                     <?php endif; ?>

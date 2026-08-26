@@ -149,6 +149,26 @@ $faviconMime = trim(
 );
 
 /*
+ * Google Analytics is enabled only when a valid-looking GA4 Measurement ID
+ * has been configured in the environment.
+ */
+$googleAnalyticsMeasurementId = trim(
+    (string) config(
+        'app.google_analytics_measurement_id',
+        ''
+    )
+);
+
+if (
+    preg_match(
+        '/^G-[A-Z0-9]+$/i',
+        $googleAnalyticsMeasurementId
+    ) !== 1
+) {
+    $googleAnalyticsMeasurementId = '';
+}
+
+/*
  * Page metadata can still be overridden by an individual page controller.
  */
 $pageTitle = trim(
@@ -350,6 +370,37 @@ if (
         rel="canonical"
         href="<?= e(url(ltrim($currentPath, '/'))) ?>"
     >
+
+    <?php if ($googleAnalyticsMeasurementId !== ''): ?>
+        <!-- Google tag (gtag.js) -->
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=<?= e(
+                $googleAnalyticsMeasurementId
+            ) ?>"
+        ></script>
+
+        <script>
+            window.dataLayer = window.dataLayer || [];
+
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+
+            gtag('js', new Date());
+
+            gtag(
+                'config',
+                <?= json_encode(
+                    $googleAnalyticsMeasurementId,
+                    JSON_HEX_TAG
+                    | JSON_HEX_AMP
+                    | JSON_HEX_APOS
+                    | JSON_HEX_QUOT
+                ) ?>
+            );
+        </script>
+    <?php endif; ?>
 
     <?php if ($faviconPath !== ''): ?>
         <link

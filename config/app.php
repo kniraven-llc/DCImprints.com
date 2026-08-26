@@ -9,4 +9,14 @@ return [
     'url' => rtrim(env('APP_URL', 'http://localhost'), '/'),
     'timezone' => env('APP_TIMEZONE', 'America/Chicago'),
     'session_name' => env('SESSION_NAME', 'dcimprints_session'),
+
+    /*
+     * Google Analytics 4
+     *
+     * Leave the Measurement ID blank in the environment to disable
+     * Google Analytics.
+     */
+    'google_analytics_measurement_id' => trim(
+        env('GOOGLE_ANALYTICS_MEASUREMENT_ID', '')
+    ),
 ];
