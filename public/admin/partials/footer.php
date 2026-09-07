@@ -290,7 +290,7 @@ dc_admin_render_footer_form(
     'footer-call-to-action',
     'Footer Call to Action',
     'Edit the large project prompt shown immediately above the main footer.',
-    'Publish Footer Call to Action',
+    'Save Footer Call to Action to Draft',
     [
         'footer_cta_eyebrow',
         'footer_cta_heading',
@@ -305,7 +305,7 @@ dc_admin_render_footer_form(
     'footer-business-summary',
     'Footer Business Summary',
     'Edit the short business description shown beside the footer logo.',
-    'Publish Footer Summary',
+    'Save Footer Summary to Draft',
     [
         'footer_summary',
     ],

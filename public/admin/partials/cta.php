@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 /*
  * Call-to-Action administration partial.
+ *
+ * The public call-to-action area is the "How It Works" process displayed
+ * directly beneath the service cards.
  */
 
 if (
@@ -19,7 +22,7 @@ if (
 
     if (
         $action
-        === 'update_cta'
+        === 'update_how_it_works'
     ) {
         $postedContent =
             $_POST['content']
@@ -32,8 +35,17 @@ if (
         dc_admin_update_content_fields(
             $postedContent,
             [
-                'quote_band_heading',
-                'quote_band_text',
+                'how_it_works_eyebrow',
+                'how_it_works_heading',
+                'how_it_works_step_1_title',
+                'how_it_works_step_1_text',
+                'how_it_works_step_2_title',
+                'how_it_works_step_2_text',
+                'how_it_works_step_3_title',
+                'how_it_works_step_3_text',
+                'how_it_works_step_4_title',
+                'how_it_works_step_4_text',
+                'how_it_works_button_label',
             ],
             'cta'
         );
@@ -60,8 +72,17 @@ foreach (
         in_array(
             $key,
             [
-                'quote_band_heading',
-                'quote_band_text',
+                'how_it_works_eyebrow',
+                'how_it_works_heading',
+                'how_it_works_step_1_title',
+                'how_it_works_step_1_text',
+                'how_it_works_step_2_title',
+                'how_it_works_step_2_text',
+                'how_it_works_step_3_title',
+                'how_it_works_step_3_text',
+                'how_it_works_step_4_title',
+                'how_it_works_step_4_text',
+                'how_it_works_button_label',
             ],
             true
         )
@@ -72,26 +93,104 @@ foreach (
 }
 
 $ctaFields = [
-    'quote_band_heading' => [
+    'how_it_works_eyebrow' => [
         'label' =>
-            'Call-to-action heading',
+            'Small label above the How It Works heading',
 
-        'help' =>
-            'The heading shown in the project prompt directly beneath the service cards.',
-
-        'rows' =>
-            2,
+        'textarea' =>
+            false,
     ],
 
-    'quote_band_text' => [
+    'how_it_works_heading' => [
         'label' =>
-            'Call-to-action paragraph',
+            'How It Works heading',
 
-        'help' =>
-            'The supporting text shown beneath the heading.',
+        'textarea' =>
+            false,
+    ],
+
+    'how_it_works_step_1_title' => [
+        'label' =>
+            'Step 1 title',
+
+        'textarea' =>
+            false,
+    ],
+
+    'how_it_works_step_1_text' => [
+        'label' =>
+            'Step 1 description',
+
+        'textarea' =>
+            true,
 
         'rows' =>
-            4,
+            3,
+    ],
+
+    'how_it_works_step_2_title' => [
+        'label' =>
+            'Step 2 title',
+
+        'textarea' =>
+            false,
+    ],
+
+    'how_it_works_step_2_text' => [
+        'label' =>
+            'Step 2 description',
+
+        'textarea' =>
+            true,
+
+        'rows' =>
+            3,
+    ],
+
+    'how_it_works_step_3_title' => [
+        'label' =>
+            'Step 3 title',
+
+        'textarea' =>
+            false,
+    ],
+
+    'how_it_works_step_3_text' => [
+        'label' =>
+            'Step 3 description',
+
+        'textarea' =>
+            true,
+
+        'rows' =>
+            3,
+    ],
+
+    'how_it_works_step_4_title' => [
+        'label' =>
+            'Step 4 title',
+
+        'textarea' =>
+            false,
+    ],
+
+    'how_it_works_step_4_text' => [
+        'label' =>
+            'Step 4 description',
+
+        'textarea' =>
+            true,
+
+        'rows' =>
+            3,
+    ],
+
+    'how_it_works_button_label' => [
+        'label' =>
+            'Start-project button label',
+
+        'textarea' =>
+            false,
     ],
 ];
 
@@ -101,12 +200,12 @@ $ctaFields = [
 >
     <div class="card-header bg-white py-3">
         <h2 class="h5 mb-1">
-            Call-to-Action Text
+            How It Works
         </h2>
 
         <p class="small text-body-secondary mb-0">
-            This prompt appears directly beneath the service cards. Its button
-            uses the shared quote-button text from Site Settings.
+            Edit the four-step process shown directly beneath the service
+            cards. The button always opens the Request a Quote form.
         </p>
     </div>
 
@@ -117,7 +216,7 @@ $ctaFields = [
             <input
                 type="hidden"
                 name="action"
-                value="update_cta"
+                value="update_how_it_works"
             >
 
             <div class="row g-4">
@@ -160,7 +259,14 @@ $ctaFields = [
                         . $key;
                     ?>
 
-                    <div class="col-12">
+                    <div
+                        class="<?= str_contains(
+                            $key,
+                            '_step_'
+                        )
+                            ? 'col-lg-6'
+                            : 'col-12' ?>"
+                    >
                         <label
                             class="form-label"
                             for="<?= e(
@@ -174,33 +280,54 @@ $ctaFields = [
                             ) ?>
                         </label>
 
-                        <textarea
-                            class="form-control"
-                            id="<?= e(
-                                $fieldId
-                            ) ?>"
-                            name="content[<?= e(
-                                $key
-                            ) ?>]"
-                            rows="<?= e(
-                                (string) $configuration[
-                                    'rows'
+                        <?php if (
+                            !empty(
+                                $configuration[
+                                    'textarea'
                                 ]
-                            ) ?>"
-                            maxlength="<?= e(
-                                (string) $maximum
-                            ) ?>"
-                            data-character-count
-                            required
-                        ><?= e($value) ?></textarea>
-
-                        <div class="form-text">
-                            <?= e(
-                                (string) $configuration[
-                                    'help'
-                                ]
-                            ) ?>
-                        </div>
+                            )
+                        ): ?>
+                            <textarea
+                                class="form-control"
+                                id="<?= e(
+                                    $fieldId
+                                ) ?>"
+                                name="content[<?= e(
+                                    $key
+                                ) ?>]"
+                                rows="<?= e(
+                                    (string) (
+                                        $configuration[
+                                            'rows'
+                                        ]
+                                        ?? 4
+                                    )
+                                ) ?>"
+                                maxlength="<?= e(
+                                    (string) $maximum
+                                ) ?>"
+                                data-character-count
+                                required
+                            ><?= e($value) ?></textarea>
+                        <?php else: ?>
+                            <input
+                                class="form-control"
+                                id="<?= e(
+                                    $fieldId
+                                ) ?>"
+                                name="content[<?= e(
+                                    $key
+                                ) ?>]"
+                                value="<?= e(
+                                    $value
+                                ) ?>"
+                                maxlength="<?= e(
+                                    (string) $maximum
+                                ) ?>"
+                                data-character-count
+                                required
+                            >
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -209,7 +336,7 @@ $ctaFields = [
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Publish Call to Action
+                Save How It Works to Draft
             </button>
         </form>
     </div>

@@ -251,7 +251,7 @@ $heroFields = [
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Publish Hero Text
+                Save Hero Text to Draft
             </button>
         </form>
     </div>

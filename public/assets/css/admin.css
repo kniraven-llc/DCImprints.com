@@ -192,3 +192,49 @@ aside .nav-link.active {
         padding: 1rem;
     }
 }
+.admin-draft-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--admin-panel-radius);
+    background: #fff;
+    box-shadow: 0 0.35rem 1rem rgba(33, 37, 41, 0.06);
+}
+
+.admin-draft-toolbar--dirty {
+    border-color: rgba(var(--bs-warning-rgb), 0.55);
+    background: color-mix(in srgb, var(--bs-warning-bg-subtle) 55%, #fff);
+}
+
+.admin-draft-toolbar__status {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 0;
+}
+
+.admin-draft-toolbar__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.6rem;
+}
+
+@media (max-width: 767.98px) {
+    .admin-draft-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-draft-toolbar__status {
+        align-items: flex-start;
+    }
+
+    .admin-draft-toolbar__actions {
+        justify-content: flex-start;
+    }
+}

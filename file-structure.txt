@@ -1,5 +1,5 @@
 Folder PATH listing for volume Kniraven
-Volume serial number is 0000007D F696:91E7
+Volume serial number is 000000AC F696:91E7
 K:.
 |   .env
 |   .env.example
@@ -40,6 +40,8 @@ K:.
 |   \---migrations
 |           20260723_create_promotions.sql
 |           20260724_add_seasonal_promotion_themes.sql
+|           20260907_add_catalog_brand_types_and_how_it_works.sql
+|           20260907_refine_how_it_works_and_catalogs.sql
 |           
 +---public
 |   |   .htaccess
@@ -132,6 +134,10 @@ K:.
 |       |   |       20260805-033722-2137a40b04d654da.png
 |       |   |       20260805-033834-64e434acb0bc1a64.png
 |       |   |       20260805-033929-f2acfed7cdf121de.png
+|       |   |       20260907-112004-d6f33f335fee1c4f.png
+|       |   |       20260907-112015-169f7278ca63b978.png
+|       |   |       20260907-112036-88a1be3d7fd516eb.png
+|       |   |       20260907-112050-e85d3d5d3b8d7503.png
 |       |   |       
 |       |   \---video
 |       |           20260804-233153-7a2c56c6244ba181.mp4
@@ -140,8 +146,11 @@ K:.
 |               .gitkeep
 |               
 \---storage
-    \---logs
-            .gitkeep
-            app.log
-            homepage-test.html
+    +---logs
+    |       .gitkeep
+    |       app.log
+    |       homepage-test.html
+    |       
+    \---rate-limits
+            12ca17b49af2289436f303e0166030a21e525d266e209267433801a8fd4071a0.json
             

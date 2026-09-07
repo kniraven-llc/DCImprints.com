@@ -44,6 +44,21 @@ function dc_admin_finish(
     string $section,
     string $anchor = ''
 ): never {
+    if (
+        $success
+        && dc_is_draft_mode()
+        && $section !== 'account'
+        && stripos(
+            $successMessage,
+            'draft'
+        ) === false
+    ) {
+        $successMessage = rtrim(
+            $successMessage
+        )
+            . ' This change is staged and is not live until you use Publish Changes.';
+    }
+
     flash(
         $success
             ? 'success'
@@ -1417,8 +1432,8 @@ function dc_admin_update_content_fields(
             && dc_update_content_values(
                 $updates
             ),
-        'Section text published.',
-        'The section text could not be published. Check the field lengths.',
+        'Section text saved to the website draft.',
+        'The section text could not be saved to the website draft. Check the field lengths.',
         $targetSection
     );
 }

@@ -393,7 +393,7 @@ function dc_site_settings(
         try {
             $statement = $pdo->query(
                 'SELECT *
-                 FROM site_settings
+                 FROM ' . dc_staging_table('site_settings') . '
                  WHERE id = 1
                  LIMIT 1'
             );
@@ -495,7 +495,7 @@ function dc_update_site_settings(
 
     try {
         $statement = $pdo->prepare(
-            'UPDATE site_settings SET
+            'UPDATE ' . dc_staging_table('site_settings') . ' SET
                 business_name = :business_name,
                 tagline = :tagline,
                 phone_number = :phone_number,
@@ -521,6 +521,8 @@ function dc_update_site_settings(
         dc_forget_content_cache(
             'site_settings'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -578,6 +580,39 @@ function dc_default_content_values(): array
         'service_card_button_label' =>
             'Request a quote',
 
+        'how_it_works_eyebrow' =>
+            'How It Works',
+
+        'how_it_works_heading' =>
+            'From Idea to Finished Product',
+
+        'how_it_works_step_1_title' =>
+            'Tell us what you need',
+
+        'how_it_works_step_1_text' =>
+            'Send us your idea, artwork, quantity and deadline.',
+
+        'how_it_works_step_2_title' =>
+            'We’ll help you figure it out',
+
+        'how_it_works_step_2_text' =>
+            'We’ll recommend the right products, decoration method and options.',
+
+        'how_it_works_step_3_title' =>
+            'Approve your project',
+
+        'how_it_works_step_3_text' =>
+            'Review artwork and pricing.',
+
+        'how_it_works_step_4_title' =>
+            'We make it',
+
+        'how_it_works_step_4_text' =>
+            'We produce your apparel and products and get them to you.',
+
+        'how_it_works_button_label' =>
+            'Start Your Project',
+
         'quote_band_heading' =>
             'Have a project in mind?',
 
@@ -634,8 +669,11 @@ function dc_default_content_values(): array
             . 'then contact DC Imprints for help '
             . 'choosing the right products.',
 
+        'catalog_brands_label' =>
+            'Some of our brands',
+
         'catalog_panel_eyebrow' =>
-            'Browse Catalogs',
+            'Some of our catalogs',
 
         'catalog_panel_heading' =>
             'Find the right product for your project',
@@ -740,7 +778,7 @@ function dc_content_values(
                 'SELECT
                     content_key,
                     content_value
-                 FROM site_content'
+                 FROM ' . dc_staging_table('site_content') . ''
             );
 
             foreach (
@@ -810,7 +848,7 @@ function dc_content_records(
         if ($section === null) {
             $statement = $pdo->query(
                 'SELECT *
-                 FROM site_content
+                 FROM ' . dc_staging_table('site_content') . '
                  WHERE is_editable = 1
                  ORDER BY
                     section_key,
@@ -820,7 +858,7 @@ function dc_content_records(
         } else {
             $statement = $pdo->prepare(
                 'SELECT *
-                 FROM site_content
+                 FROM ' . dc_staging_table('site_content') . '
                  WHERE is_editable = 1
                    AND section_key = :section_key
                  ORDER BY
@@ -897,7 +935,7 @@ function dc_update_content_values(
             'SELECT
                 content_key,
                 max_length
-             FROM site_content
+             FROM ' . dc_staging_table('site_content') . '
              WHERE is_editable = 1
                AND content_key IN ('
             . $placeholders
@@ -930,7 +968,7 @@ function dc_update_content_values(
         }
 
         $statement = $pdo->prepare(
-            'UPDATE site_content
+            'UPDATE ' . dc_staging_table('site_content') . '
              SET content_value = :content_value
              WHERE content_key = :content_key
                AND is_editable = 1'
@@ -976,6 +1014,8 @@ function dc_update_content_values(
         dc_forget_content_cache(
             'content_values'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -1190,7 +1230,7 @@ function dc_set_active_theme(
 
     try {
         $statement = $pdo->prepare(
-            'UPDATE site_settings
+            'UPDATE ' . dc_staging_table('site_settings') . '
              SET active_theme_id = :theme_id
              WHERE id = 1
                AND EXISTS (
@@ -1233,6 +1273,8 @@ function dc_set_active_theme(
         dc_forget_content_cache(
             'active_theme'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -1397,7 +1439,7 @@ function dc_site_media_slots(
                     media.file_size_bytes,
                     media.alt_text,
                     media.is_managed_upload
-                 FROM site_media_slots AS slot
+                 FROM ' . dc_staging_table('site_media_slots') . ' AS slot
                  LEFT JOIN media_assets AS media
                    ON media.id =
                       slot.media_asset_id
@@ -1620,7 +1662,7 @@ function dc_assign_site_media(
 
     try {
         $statement = $pdo->prepare(
-            'UPDATE site_media_slots
+            'UPDATE ' . dc_staging_table('site_media_slots') . '
              SET media_asset_id =
                     :media_asset_id
              WHERE slot_key = :slot_key'
@@ -1645,7 +1687,7 @@ function dc_assign_site_media(
         if ($statement->rowCount() === 0) {
             $check = $pdo->prepare(
                 'SELECT 1
-                 FROM site_media_slots
+                 FROM ' . dc_staging_table('site_media_slots') . '
                  WHERE slot_key = :slot_key'
             );
 
@@ -1664,6 +1706,8 @@ function dc_assign_site_media(
         dc_forget_content_cache(
             'site_media_slots'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -1966,7 +2010,7 @@ function dc_services(
                     media.alt_text,
                     media.media_kind,
                     media.mime_type
-                 FROM services AS service
+                 FROM ' . dc_staging_table('services') . ' AS service
                  LEFT JOIN media_assets AS media
                    ON media.id =
                       service.image_asset_id';
@@ -2080,7 +2124,7 @@ function dc_unique_service_slug(
         while (true) {
             $sql =
                 'SELECT id
-                 FROM services
+                 FROM ' . dc_staging_table('services') . '
                  WHERE slug = :slug';
 
             $parameters = [
@@ -2167,7 +2211,7 @@ function dc_create_service(
         $orderStatement = $pdo->query(
             'SELECT
                 COALESCE(MAX(sort_order), 0) + 10
-             FROM services'
+             FROM ' . dc_staging_table('services') . ''
         );
 
         $nextOrder =
@@ -2177,7 +2221,7 @@ function dc_create_service(
             dc_unique_service_slug($name);
 
         $statement = $pdo->prepare(
-            'INSERT INTO services (
+            'INSERT INTO ' . dc_staging_table('services') . ' (
                 slug,
                 name,
                 description,
@@ -2292,6 +2336,8 @@ function dc_create_service(
             'services_all'
         );
 
+        dc_staging_mark_dirty();
+
         return (int) $pdo->lastInsertId();
     } catch (Throwable $exception) {
         dc_log_content_error(
@@ -2347,7 +2393,7 @@ function dc_update_service(
         );
 
         $statement = $pdo->prepare(
-            'UPDATE services SET
+            'UPDATE ' . dc_staging_table('services') . ' SET
                 slug = :slug,
                 name = :name,
                 description = :description,
@@ -2439,6 +2485,8 @@ function dc_update_service(
         dc_forget_content_cache(
             'services_all'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -2703,7 +2751,7 @@ function dc_testimonials(
         try {
             $sql =
                 'SELECT *
-                 FROM testimonials';
+                 FROM ' . dc_staging_table('testimonials') . '';
 
             if ($activeOnly) {
                 $sql .=
@@ -2796,7 +2844,7 @@ function dc_create_testimonial(
         $nextOrder = (int) $pdo->query(
             'SELECT
                 COALESCE(MAX(sort_order), 0) + 10
-             FROM testimonials'
+             FROM ' . dc_staging_table('testimonials') . ''
         )->fetchColumn();
 
         $avatarStyle =
@@ -2822,7 +2870,7 @@ function dc_create_testimonial(
         }
 
         $statement = $pdo->prepare(
-            'INSERT INTO testimonials (
+            'INSERT INTO ' . dc_staging_table('testimonials') . ' (
                 reviewer_name,
                 review_text,
                 rating,
@@ -2907,6 +2955,8 @@ function dc_create_testimonial(
             'testimonials_all'
         );
 
+        dc_staging_mark_dirty();
+
         return (int) $pdo->lastInsertId();
     } catch (Throwable $exception) {
         dc_log_content_error(
@@ -2983,7 +3033,7 @@ function dc_update_testimonial(
 
     try {
         $statement = $pdo->prepare(
-            'UPDATE testimonials SET
+            'UPDATE ' . dc_staging_table('testimonials') . ' SET
                 reviewer_name =
                     :reviewer_name,
                 review_text =
@@ -3044,6 +3094,8 @@ function dc_update_testimonial(
         dc_forget_content_cache(
             'testimonials_all'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -3298,7 +3350,7 @@ function dc_profiles(
                     media.alt_text,
                     media.media_kind,
                     media.mime_type
-                 FROM profiles AS profile
+                 FROM ' . dc_staging_table('profiles') . ' AS profile
                  LEFT JOIN media_assets AS media
                    ON media.id =
                       profile.image_asset_id';
@@ -3404,7 +3456,7 @@ function dc_create_profile(
         $nextOrder = (int) $pdo->query(
             'SELECT
                 COALESCE(MAX(sort_order), 0) + 10
-             FROM profiles'
+             FROM ' . dc_staging_table('profiles') . ''
         )->fetchColumn();
 
         $profileType =
@@ -3414,7 +3466,7 @@ function dc_create_profile(
                 : 'staff';
 
         $statement = $pdo->prepare(
-            'INSERT INTO profiles (
+            'INSERT INTO ' . dc_staging_table('profiles') . ' (
                 profile_type,
                 name,
                 role_title,
@@ -3486,6 +3538,8 @@ function dc_create_profile(
             'profiles_all'
         );
 
+        dc_staging_mark_dirty();
+
         return (int) $pdo->lastInsertId();
     } catch (Throwable $exception) {
         dc_log_content_error(
@@ -3544,7 +3598,7 @@ function dc_update_profile(
 
     try {
         $statement = $pdo->prepare(
-            'UPDATE profiles SET
+            'UPDATE ' . dc_staging_table('profiles') . ' SET
                 name = :name,
                 role_title = :role_title,
                 biography = :biography,
@@ -3589,6 +3643,8 @@ function dc_update_profile(
             'profiles_all'
         );
 
+        dc_staging_mark_dirty();
+
         return true;
     } catch (Throwable $exception) {
         dc_log_content_error(
@@ -3625,7 +3681,7 @@ function dc_delete_profile(
 
     try {
         $statement = $pdo->prepare(
-            'DELETE FROM profiles
+            'DELETE FROM ' . dc_staging_table('profiles') . '
              WHERE id = :id
                AND is_protected = 0'
         );
@@ -3648,6 +3704,8 @@ function dc_delete_profile(
         dc_forget_content_cache(
             'profiles_all'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -3673,7 +3731,7 @@ function dc_reorder_profiles(
 }
 
 /**
- * Current partner placeholders used when the database is unavailable.
+ * Current brand and catalog records used when the database is unavailable.
  *
  * @return array<int, array<string, mixed>>
  */
@@ -3688,6 +3746,7 @@ function dc_default_partners(): array
     ) {
         $partners[] = [
             'id' => $index,
+            'partner_type' => 'brand',
             'name' => null,
             'catalog_url' => null,
             'logo_asset_id' =>
@@ -3703,6 +3762,46 @@ function dc_default_partners(): array
                 $index * 10,
             'is_active' => 1,
         ];
+    }
+
+    $catalogs = [
+        [
+            'id' => 1001,
+            'name' => 'Sanmar',
+            'catalog_url' => 'https://www.sanmar.com/',
+            'sort_order' => 10,
+        ],
+        [
+            'id' => 1002,
+            'name' => 'S&S Activewear',
+            'catalog_url' => 'https://www.ssactivewear.com/',
+            'sort_order' => 20,
+        ],
+        [
+            'id' => 1003,
+            'name' => 'Driving Impressions',
+            'catalog_url' => 'https://www.drivingi.com/?v=home',
+            'sort_order' => 30,
+        ],
+        [
+            'id' => 1004,
+            'name' => 'White Bear Clothing',
+            'catalog_url' => 'https://www.whitebearclothing.com/20/home.htm',
+            'sort_order' => 40,
+        ],
+    ];
+
+    foreach ($catalogs as $catalog) {
+        $partners[] = array_merge(
+            [
+                'partner_type' => 'catalog',
+                'logo_asset_id' => null,
+                'placeholder_label' => 'Catalog',
+                'image' => '',
+                'is_active' => 1,
+            ],
+            $catalog
+        );
     }
 
     return $partners;
@@ -3741,6 +3840,28 @@ function dc_normalize_partner(
         )
     );
 
+    $partnerType = strtolower(
+        trim(
+            (string) (
+                $partner['partner_type']
+                ?? 'brand'
+            )
+        )
+    );
+
+    if (
+        !in_array(
+            $partnerType,
+            [
+                'brand',
+                'catalog',
+            ],
+            true
+        )
+    ) {
+        $partnerType = 'brand';
+    }
+
     $logoAssetId =
         $partner['logo_asset_id']
         ?? null;
@@ -3750,6 +3871,9 @@ function dc_normalize_partner(
             $partner['id']
             ?? 0
         );
+
+    $partner['partner_type'] =
+        $partnerType;
 
     $partner['logo_asset_id'] =
         $logoAssetId !== null
@@ -3827,7 +3951,7 @@ function dc_partners(
                     media.alt_text,
                     media.media_kind,
                     media.mime_type
-                 FROM partners AS partner
+                 FROM ' . dc_staging_table('partners') . ' AS partner
                  LEFT JOIN media_assets AS media
                    ON media.id =
                       partner.logo_asset_id';
@@ -3839,6 +3963,7 @@ function dc_partners(
 
             $sql .=
                 ' ORDER BY
+                    partner.partner_type,
                     partner.sort_order,
                     partner.id';
 
@@ -3883,6 +4008,50 @@ function dc_partners(
 }
 
 /**
+ * Return only brand or catalog records.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function dc_partners_by_type(
+    string $partnerType,
+    bool $activeOnly = true,
+    bool $refresh = false
+): array {
+    $partnerType = strtolower(
+        trim($partnerType)
+    );
+
+    if (
+        !in_array(
+            $partnerType,
+            [
+                'brand',
+                'catalog',
+            ],
+            true
+        )
+    ) {
+        return [];
+    }
+
+    return array_values(
+        array_filter(
+            dc_partners(
+                $activeOnly,
+                $refresh
+            ),
+            static fn (
+                array $partner
+            ): bool =>
+                (string) (
+                    $partner['partner_type']
+                    ?? 'brand'
+                ) === $partnerType
+        )
+    );
+}
+
+/**
  * @param array<string, mixed> $partner
  */
 function dc_create_partner(
@@ -3905,15 +4074,49 @@ function dc_create_partner(
         return null;
     }
 
+    $partnerType = strtolower(
+        trim(
+            (string) (
+                $partner['partner_type']
+                ?? 'brand'
+            )
+        )
+    );
+
+    if (
+        !in_array(
+            $partnerType,
+            [
+                'brand',
+                'catalog',
+            ],
+            true
+        )
+    ) {
+        return null;
+    }
+
     try {
-        $nextOrder = (int) $pdo->query(
-            'SELECT
-                COALESCE(MAX(sort_order), 0) + 10
-             FROM partners'
-        )->fetchColumn();
+        $orderStatement =
+            $pdo->prepare(
+                'SELECT
+                    COALESCE(MAX(sort_order), 0) + 10
+                 FROM ' . dc_staging_table('partners') . '
+                 WHERE partner_type = :partner_type'
+            );
+
+        $orderStatement->execute([
+            'partner_type' =>
+                $partnerType,
+        ]);
+
+        $nextOrder =
+            (int) $orderStatement
+                ->fetchColumn();
 
         $statement = $pdo->prepare(
-            'INSERT INTO partners (
+            'INSERT INTO ' . dc_staging_table('partners') . ' (
+                partner_type,
                 name,
                 catalog_url,
                 logo_asset_id,
@@ -3921,6 +4124,7 @@ function dc_create_partner(
                 sort_order,
                 is_active
              ) VALUES (
+                :partner_type,
                 :name,
                 :catalog_url,
                 :logo_asset_id,
@@ -3931,6 +4135,9 @@ function dc_create_partner(
         );
 
         $statement->execute([
+            'partner_type' =>
+                $partnerType,
+
             'name' => $name,
 
             'catalog_url' =>
@@ -3962,7 +4169,11 @@ function dc_create_partner(
                         ]
                         ?? ''
                     )
-                ) ?: 'Partner logo',
+                ) ?: (
+                    $partnerType === 'catalog'
+                        ? 'Catalog'
+                        : 'Partner logo'
+                ),
 
             'sort_order' =>
                 isset(
@@ -3997,6 +4208,8 @@ function dc_create_partner(
         dc_forget_content_cache(
             'partners_all'
         );
+
+        dc_staging_mark_dirty();
 
         return (int) $pdo->lastInsertId();
     } catch (Throwable $exception) {
@@ -4036,9 +4249,32 @@ function dc_update_partner(
         return false;
     }
 
+    $partnerType = strtolower(
+        trim(
+            (string) (
+                $partner['partner_type']
+                ?? 'brand'
+            )
+        )
+    );
+
+    if (
+        !in_array(
+            $partnerType,
+            [
+                'brand',
+                'catalog',
+            ],
+            true
+        )
+    ) {
+        return false;
+    }
+
     try {
         $statement = $pdo->prepare(
-            'UPDATE partners SET
+            'UPDATE ' . dc_staging_table('partners') . ' SET
+                partner_type = :partner_type,
                 name = :name,
                 catalog_url = :catalog_url,
                 logo_asset_id = :logo_asset_id,
@@ -4050,6 +4286,8 @@ function dc_update_partner(
 
         $statement->execute([
             'id' => $partnerId,
+            'partner_type' =>
+                $partnerType,
             'name' => $name,
 
             'catalog_url' =>
@@ -4081,7 +4319,11 @@ function dc_update_partner(
                         ]
                         ?? ''
                     )
-                ) ?: 'Partner logo',
+                ) ?: (
+                    $partnerType === 'catalog'
+                        ? 'Catalog'
+                        : 'Partner logo'
+                ),
 
             'is_active' =>
                 !empty(
@@ -4100,6 +4342,8 @@ function dc_update_partner(
         dc_forget_content_cache(
             'partners_all'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -4176,10 +4420,12 @@ function dc_set_record_active(
         return false;
     }
 
+    $storageTable = dc_staging_table($table);
+
     try {
         $statement = $pdo->prepare(
             'UPDATE '
-            . $table
+            . $storageTable
             . '
              SET is_active = :is_active
              WHERE id = :id'
@@ -4198,6 +4444,8 @@ function dc_set_record_active(
         dc_forget_content_cache(
             $table . '_all'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -4242,10 +4490,12 @@ function dc_delete_record(
         return false;
     }
 
+    $storageTable = dc_staging_table($table);
+
     try {
         $statement = $pdo->prepare(
             'DELETE FROM '
-            . $table
+            . $storageTable
             . '
              WHERE id = :id'
         );
@@ -4268,6 +4518,8 @@ function dc_delete_record(
         dc_forget_content_cache(
             $table . '_all'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -4332,10 +4584,12 @@ function dc_reorder_records(
         return false;
     }
 
+    $storageTable = dc_staging_table($table);
+
     try {
         $statement = $pdo->prepare(
             'UPDATE '
-            . $table
+            . $storageTable
             . '
              SET sort_order = :sort_order
              WHERE id = :id'
@@ -4363,6 +4617,8 @@ function dc_reorder_records(
         dc_forget_content_cache(
             $table . '_all'
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {
@@ -4408,22 +4664,22 @@ function dc_admin_content_counts(): array
             'SELECT
                 (
                     SELECT COUNT(*)
-                    FROM services
+                    FROM ' . dc_staging_table('services') . '
                     WHERE is_active = 1
                 ) AS services,
                 (
                     SELECT COUNT(*)
-                    FROM testimonials
+                    FROM ' . dc_staging_table('testimonials') . '
                     WHERE is_active = 1
                 ) AS testimonials,
                 (
                     SELECT COUNT(*)
-                    FROM profiles
+                    FROM ' . dc_staging_table('profiles') . '
                     WHERE is_active = 1
                 ) AS profiles,
                 (
                     SELECT COUNT(*)
-                    FROM partners
+                    FROM ' . dc_staging_table('partners') . '
                     WHERE is_active = 1
                 ) AS partners'
         );

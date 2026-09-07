@@ -12,6 +12,13 @@ declare(strict_types=1);
 $siteSettings = dc_site_settings();
 $activeTheme = dc_active_theme();
 $headerServices = dc_services(true);
+$headerCatalogs =
+    dc_partners_by_type(
+        'catalog',
+        true
+    );
+
+$isPreviewMode = dc_is_preview_mode();
 
 $businessName = trim(
     (string) (
@@ -168,6 +175,10 @@ if (
     $googleAnalyticsMeasurementId = '';
 }
 
+if ($isPreviewMode) {
+    $googleAnalyticsMeasurementId = '';
+}
+
 /*
  * Page metadata can still be overridden by an individual page controller.
  */
@@ -210,8 +221,17 @@ $normalizedPath = rtrim(
 );
 
 $isHomePage =
-    $normalizedPath === ''
+    $isPreviewMode
+    || $normalizedPath === ''
     || $normalizedPath === '/index.php';
+
+$homeHref = $isPreviewMode
+    ? '/admin/preview/'
+    : '/';
+
+$canonicalHref = $isPreviewMode
+    ? url('')
+    : url(ltrim($currentPath, '/'));
 
 $sectionHref = static fn (
     string $section
@@ -226,6 +246,10 @@ $headerClasses = $isHomePage
 $bodyPageClass = $isHomePage
     ? 'site-home'
     : 'site-interior';
+
+if ($isPreviewMode) {
+    $bodyPageClass .= ' site-preview';
+}
 
 $isServicesPage = str_starts_with(
     $currentPath,
@@ -368,8 +392,12 @@ if (
 
     <link
         rel="canonical"
-        href="<?= e(url(ltrim($currentPath, '/'))) ?>"
+        href="<?= e($canonicalHref) ?>"
     >
+
+    <?php if ($isPreviewMode): ?>
+        <meta name="robots" content="noindex,nofollow,noarchive">
+    <?php endif; ?>
 
     <?php if ($googleAnalyticsMeasurementId !== ''): ?>
         <!-- Google tag (gtag.js) -->
@@ -422,6 +450,13 @@ if (
         rel="stylesheet"
     >
 
+    <?php if ($isPreviewMode): ?>
+        <link
+            href="/assets/css/preview.css"
+            rel="stylesheet"
+        >
+    <?php endif; ?>
+
     <link
         href="/assets/css/themes.css"
         rel="stylesheet"
@@ -469,6 +504,29 @@ if (
     class="<?= e($bodyPageClass) ?> d-flex flex-column min-vh-100"
     data-theme="<?= e($themeKey) ?>"
 >
+<?php if ($isPreviewMode): ?>
+    <div
+        class="dc-preview-bar"
+        role="status"
+        aria-label="Website preview status"
+    >
+        <div class="container dc-preview-bar__inner">
+            <div>
+                <strong>Preview — Unpublished Changes</strong>
+                <span class="dc-preview-bar__note">
+                    This page uses the staged admin draft. The live website has not changed.
+                </span>
+            </div>
+
+            <a
+                class="dc-preview-bar__link"
+                href="/admin/"
+            >
+                Back to Admin
+            </a>
+        </div>
+    </div>
+<?php endif; ?>
 <a
     class="skip-link visually-hidden-focusable"
     href="#main-content"
@@ -487,7 +545,7 @@ if (
         <div class="container">
             <a
                 class="navbar-brand site-brand"
-                href="/"
+                href="<?= e($homeHref) ?>"
                 aria-label="<?= e($businessName) ?> home"
             >
                 <?php if ($brandMarkPath !== ''): ?>
@@ -625,15 +683,63 @@ if (
                         </a>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item dropdown">
                         <a
-                            class="nav-link site-nav-link"
+                            class="nav-link dropdown-toggle site-nav-link"
                             href="<?= e($sectionHref('catalogs')) ?>"
+                            id="catalogsDropdown"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
                             data-nav-section="catalogs"
-                            data-site-nav-link
                         >
                             Catalogs
                         </a>
+
+                        <ul
+                            class="dropdown-menu catalogs-menu"
+                            aria-labelledby="catalogsDropdown"
+                        >
+                            <?php foreach (
+                                $headerCatalogs
+                                as $catalog
+                            ): ?>
+                                <?php
+                                $catalogName = trim(
+                                    (string) (
+                                        $catalog['name']
+                                        ?? ''
+                                    )
+                                );
+
+                                $catalogUrl = trim(
+                                    (string) (
+                                        $catalog['catalog_url']
+                                        ?? ''
+                                    )
+                                );
+
+                                if (
+                                    $catalogName === ''
+                                    || $catalogUrl === ''
+                                ) {
+                                    continue;
+                                }
+                                ?>
+
+                                <li>
+                                    <a
+                                        class="dropdown-item catalogs-menu__link"
+                                        href="<?= e($catalogUrl) ?>"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        data-site-nav-link
+                                    >
+                                        <?= e($catalogName) ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
                     </li>
 
                     <li class="nav-item">

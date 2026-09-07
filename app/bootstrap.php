@@ -104,17 +104,22 @@ if (
  *
  * 1. Database access
  * 2. General application helpers
- * 3. Database-backed website content
- * 4. Managed upload handling
- * 5. Administrator authentication
- * 6. Form validation
- * 7. Email delivery
+ * 3. Draft / preview / publish routing
+ * 4. Database-backed website content
+ * 5. Promotions
+ * 6. Managed upload handling
+ * 7. Administrator authentication
+ * 8. Form validation
+ * 9. Email delivery
  */
 require_once
     APP_ROOT . '/app/database.php';
 
 require_once
     APP_ROOT . '/app/functions.php';
+
+require_once
+    APP_ROOT . '/app/staging.php';
 
 require_once
     APP_ROOT . '/app/content.php';

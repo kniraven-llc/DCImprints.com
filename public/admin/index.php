@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+define('DC_CONTENT_MODE', 'draft');
+
 require dirname(__DIR__, 2)
     . '/app/bootstrap.php';
 
@@ -15,7 +17,7 @@ $sections = [
     'cta' => 'Call to Action',
     'reviews' => 'Google Reviews',
     'profiles' => 'About & Staff',
-    'partners' => 'Catalogs & Partners',
+    'partners' => 'Catalogs & Brands',
     'quote' => 'Quote Form',
     'location' => 'Location',
     'footer' => 'Footer',
@@ -36,7 +38,7 @@ $sectionDescriptions = [
         'Edit the Services introduction and manage the service cards.',
 
     'cta' =>
-        'Edit the standalone project prompt shown beneath the service cards.',
+        'Edit the How It Works process shown beneath the service cards.',
 
     'reviews' =>
         'Edit the Google Reviews section, link, and review cards.',
@@ -45,7 +47,7 @@ $sectionDescriptions = [
         'Edit the business overview and add staff cards as needed.',
 
     'partners' =>
-        'Edit the catalogs area and manage partner logos and links.',
+        'Manage brand logos and the supplier catalogs used on the website and in navigation.',
 
     'quote' =>
         'Edit the quote-form heading and submit button.',
@@ -60,7 +62,7 @@ $sectionDescriptions = [
         'Choose an approved visual theme for the public website.',
 
     'account' =>
-        'Manage the administrator login details and password.',
+        'Manage the administrator login details and password. Account changes take effect immediately and are not part of the website draft.',
 ];
 
 $sectionPartials = [
@@ -192,6 +194,36 @@ if (is_post()) {
         );
     }
 
+    if ($action === 'publish_site_draft') {
+        $published = dc_staging_publish();
+
+        flash(
+            $published
+                ? 'success'
+                : 'error',
+            $published
+                ? 'All staged website changes are now live.'
+                : 'The staged website changes could not be published.'
+        );
+
+        dc_admin_redirect($section);
+    }
+
+    if ($action === 'discard_site_draft') {
+        $discarded = dc_staging_discard();
+
+        flash(
+            $discarded
+                ? 'success'
+                : 'error',
+            $discarded
+                ? 'All unpublished website changes were discarded.'
+                : 'The unpublished changes could not be discarded.'
+        );
+
+        dc_admin_redirect($section);
+    }
+
     $adminPartialMode = 'process';
 
     require $partialPath;
@@ -211,6 +243,11 @@ if (is_post()) {
 $success = flash('success');
 $warning = flash('warning');
 $error = flash('error');
+
+$draftStatus = dc_staging_status();
+$draftHasChanges = !empty(
+    $draftStatus['has_changes']
+);
 
 $siteSettings =
     dc_site_settings(true);
@@ -279,14 +316,25 @@ require APP_ROOT
 
                 <hr>
 
-                <a
-                    class="btn btn-outline-secondary w-100"
-                    href="/"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    View Website
-                </a>
+                <div class="d-grid gap-2">
+                    <a
+                        class="btn btn-primary w-100"
+                        href="/admin/preview/"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        Preview Draft
+                    </a>
+
+                    <a
+                        class="btn btn-outline-secondary w-100"
+                        href="/"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        View Live Website
+                    </a>
+                </div>
             </div>
         </div>
     </aside>
@@ -308,6 +356,88 @@ require APP_ROOT
                 </p>
             </div>
         </div>
+
+        <?php if (!$mustChangePassword): ?>
+            <section
+                class="admin-draft-toolbar mb-4 <?= $draftHasChanges
+                    ? 'admin-draft-toolbar--dirty'
+                    : 'admin-draft-toolbar--clean' ?>"
+                aria-label="Website draft controls"
+            >
+                <div class="admin-draft-toolbar__status">
+                    <span
+                        class="badge <?= $draftHasChanges
+                            ? 'text-bg-warning'
+                            : 'text-bg-success' ?>"
+                    >
+                        <?= $draftHasChanges
+                            ? 'Unpublished Changes'
+                            : 'Draft Matches Live Site' ?>
+                    </span>
+
+                    <div>
+                        <strong class="d-block">
+                            Website Draft
+                        </strong>
+
+                        <span class="small text-body-secondary">
+                            <?= $draftHasChanges
+                                ? 'Your admin changes are staged. Review them in Preview, then publish them all at once.'
+                                : 'Changes made in website-content sections will be staged here until you publish them.' ?>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="admin-draft-toolbar__actions">
+                    <a
+                        class="btn btn-outline-primary"
+                        href="/admin/preview/"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        Preview Draft
+                    </a>
+
+                    <?php if ($draftHasChanges): ?>
+                        <form method="post" class="m-0">
+                            <?= csrf_field() ?>
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="publish_site_draft"
+                            >
+
+                            <button
+                                class="btn btn-success"
+                                type="submit"
+                                onclick="return confirm('Publish all staged website changes to the live site?');"
+                            >
+                                Publish Changes
+                            </button>
+                        </form>
+
+                        <form method="post" class="m-0">
+                            <?= csrf_field() ?>
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="discard_site_draft"
+                            >
+
+                            <button
+                                class="btn btn-outline-danger"
+                                type="submit"
+                                onclick="return confirm('Discard every unpublished website change and restore the draft from the live site?');"
+                            >
+                                Discard Changes
+                            </button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </section>
+        <?php endif; ?>
 
         <?php if ($mustChangePassword): ?>
             <div

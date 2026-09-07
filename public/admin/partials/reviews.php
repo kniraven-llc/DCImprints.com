@@ -309,8 +309,8 @@ if (
         dc_admin_finish(
             $settingsUpdated
                 && $contentUpdated,
-            'Google reviews link published.',
-            'The Google reviews link could not be published.',
+            'Google reviews link saved to the website draft.',
+            'The Google reviews link could not be saved to the website draft.',
             'reviews',
             'google-reviews-link'
         );
@@ -529,8 +529,8 @@ if (
                 $isActive
             ),
             $isActive
-                ? 'Google review shown on the website.'
-                : 'Google review hidden from the website.',
+                ? 'Google review set to show in the draft.'
+                : 'Google review hidden in the draft.',
             'The review visibility could not be changed.',
             'reviews',
             'testimonial-' . $testimonialId
@@ -790,7 +790,7 @@ $testimonials =
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Publish Reviews Introduction
+                Save Reviews Introduction to Draft
             </button>
         </form>
     </div>
@@ -883,7 +883,7 @@ $testimonials =
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Publish Google Reviews Link
+                Save Google Reviews Link to Draft
             </button>
         </form>
     </div>
@@ -1111,7 +1111,7 @@ $testimonials =
                                 : 'text-bg-secondary' ?>"
                         >
                             <?= $isActive
-                                ? 'Published'
+                                ? 'Visible in Draft'
                                 : 'Hidden' ?>
                         </span>
 
@@ -1234,8 +1234,8 @@ $testimonials =
                                 type="submit"
                             >
                                 <?= $isActive
-                                    ? 'Hide'
-                                    : 'Publish' ?>
+                                    ? 'Hide in Draft'
+                                    : 'Show in Draft' ?>
                             </button>
                         </form>
                     </div>

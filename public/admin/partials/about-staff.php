@@ -1118,8 +1118,8 @@ if (
                 $isActive
             ),
             $isActive
-                ? 'Staff profile shown on the website.'
-                : 'Staff profile hidden from the website.',
+                ? 'Staff profile set to show in the draft.'
+                : 'Staff profile hidden in the draft.',
             'The staff profile visibility could not be changed.',
             'profiles',
             'profile-' . $profileId
@@ -1397,7 +1397,7 @@ foreach ($profiles as $profile) {
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Publish About Section
+                Save About Section to Draft
             </button>
         </form>
     </div>
@@ -1796,7 +1796,7 @@ foreach ($profiles as $profile) {
                                 : 'text-bg-secondary' ?>"
                         >
                             <?= $isActive
-                                ? 'Published'
+                                ? 'Visible in Draft'
                                 : 'Hidden' ?>
                         </span>
                     </div>
@@ -1915,8 +1915,8 @@ foreach ($profiles as $profile) {
                                 type="submit"
                             >
                                 <?= $isActive
-                                    ? 'Hide'
-                                    : 'Publish' ?>
+                                    ? 'Hide in Draft'
+                                    : 'Show in Draft' ?>
                             </button>
                         </form>
                     </div>

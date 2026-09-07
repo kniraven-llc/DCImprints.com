@@ -370,8 +370,8 @@ if (
 
         dc_admin_finish(
             $updated,
-            'Business information published.',
-            'Business information could not be published.',
+            'Business information saved to the website draft.',
+            'Business information could not be saved to the website draft.',
             'business',
             'business-information'
         );
@@ -472,8 +472,8 @@ if (
             dc_update_content_values(
                 $updates
             ),
-            'Header and quote-button labels published.',
-            'The header labels could not be published.',
+            'Header and quote-button labels saved to the website draft.',
+            'The header labels could not be saved to the website draft.',
             'business',
             'header-settings'
         );
@@ -553,8 +553,8 @@ if (
                 'meta_description' =>
                     $metaDescriptionValue,
             ]),
-            'Search and browser information published.',
-            'Search and browser information could not be published.',
+            'Search and browser information saved to the website draft.',
+            'Search and browser information could not be saved to the website draft.',
             'business',
             'search-settings'
         );
@@ -758,7 +758,7 @@ if (
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Publish Business Information
+                Save Business Information to Draft
             </button>
         </form>
     </div>
@@ -854,7 +854,7 @@ if (
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Publish Header Settings
+                Save Header Settings to Draft
             </button>
         </form>
     </div>
@@ -1012,7 +1012,7 @@ dc_admin_render_site_media_cards(
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Publish Search Information
+                Save Search Information to Draft
             </button>
         </form>
     </div>

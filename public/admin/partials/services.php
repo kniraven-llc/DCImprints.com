@@ -988,8 +988,8 @@ if (
                 $isActive
             ),
             $isActive
-                ? 'Service shown on the website.'
-                : 'Service hidden from the website.',
+                ? 'Service set to show in the draft.'
+                : 'Service hidden in the draft.',
             'The service visibility could not be changed.',
             'services',
             'service-' . $serviceId
@@ -1253,7 +1253,7 @@ $services =
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Publish Services Introduction
+                Save Services Introduction to Draft
             </button>
         </form>
     </div>
@@ -1436,7 +1436,7 @@ $services =
                                 : 'text-bg-secondary' ?>"
                         >
                             <?= $isActive
-                                ? 'Published'
+                                ? 'Visible in Draft'
                                 : 'Hidden' ?>
                         </span>
                     </div>
@@ -1553,8 +1553,8 @@ $services =
                                 type="submit"
                             >
                                 <?= $isActive
-                                    ? 'Hide'
-                                    : 'Publish' ?>
+                                    ? 'Hide in Draft'
+                                    : 'Show in Draft' ?>
                             </button>
                         </form>
                     </div>

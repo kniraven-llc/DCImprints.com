@@ -115,7 +115,7 @@ function dc_admin_save_quote_content(
         if ($value === '') {
             flash(
                 'error',
-                'Complete every field before publishing.'
+                'Complete every field before saving.'
             );
 
             dc_admin_redirect(
@@ -160,7 +160,7 @@ function dc_admin_save_quote_content(
                 $updates
             ),
         $successMessage,
-        'The Quote Form content could not be published.',
+        'The Quote Form content could not be saved to the website draft.',
         'quote',
         $anchor
     );
@@ -344,7 +344,7 @@ if (
                 'contact_intro',
             ],
             $quoteRecords,
-            'Quote Form introduction published.',
+            'Quote Form introduction saved to the website draft.',
             'quote-form-introduction'
         );
     }
@@ -359,7 +359,7 @@ if (
                 'quote_submit_label',
             ],
             $quoteRecords,
-            'Quote Form send-button text published.',
+            'Quote Form send-button text saved to the website draft.',
             'quote-form-button'
         );
     }
@@ -415,7 +415,7 @@ dc_admin_render_quote_form(
     'quote-form-introduction',
     'Quote Form Introduction',
     'Edit the heading and introduction shown above the form fields.',
-    'Publish Quote Form Introduction',
+    'Save Quote Form Introduction to Draft',
     [
         'quote_eyebrow',
         'quote_heading',
@@ -430,7 +430,7 @@ dc_admin_render_quote_form(
     'quote-form-button',
     'Send Button',
     'Edit the text on the button that submits a completed quote request.',
-    'Publish Send Button',
+    'Save Send Button to Draft',
     [
         'quote_submit_label',
     ],

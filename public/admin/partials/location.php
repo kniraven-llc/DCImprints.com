@@ -281,7 +281,7 @@ dc_admin_render_location_form(
     'location-introduction',
     'Location Introduction',
     'Edit the heading and introduction above the business address and map.',
-    'Publish Location Introduction',
+    'Save Location Introduction to Draft',
     [
         'location_eyebrow',
         'location_heading',
@@ -296,7 +296,7 @@ dc_admin_render_location_form(
     'location-directions-button',
     'Directions Button',
     'Edit the text on the button that opens the business location in Google Maps.',
-    'Publish Directions Button',
+    'Save Directions Button to Draft',
     [
         'location_directions_label',
     ],

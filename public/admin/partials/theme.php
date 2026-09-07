@@ -57,8 +57,8 @@ if (
 
         dc_admin_finish(
             dc_set_active_theme($themeId),
-            'Website theme published.',
-            'The selected theme could not be published.',
+            'Website theme saved to the website draft.',
+            'The selected theme could not be saved to the website draft.',
             'theme'
         );
     }
@@ -225,7 +225,7 @@ $currentThemeId =
 
                         <?php if ($isActiveTheme): ?>
                             <span class="badge text-bg-success">
-                                Current Theme
+                                Selected in Draft
                             </span>
                         <?php else: ?>
                             <form method="post">
@@ -247,7 +247,7 @@ $currentThemeId =
                                     class="btn btn-primary"
                                     type="submit"
                                 >
-                                    Publish This Theme
+                                    Use This Theme in Draft
                                 </button>
                             </form>
                         <?php endif; ?>

@@ -8,9 +8,10 @@ declare(strict_types=1);
  * Handles:
  * - Catalogs section heading and introduction
  * - Catalog help-panel text
- * - Creating partners
- * - Editing partner names and catalog URLs
- * - Partner logos
+ * - Creating brands and catalogs
+ * - Editing names and destination URLs
+ * - Brand logos
+ * - Brand/catalog type
  * - Visibility
  * - Display order
  * - Deletion
@@ -39,8 +40,29 @@ function dc_admin_partners_find(
 /**
  * @return array<int, int>
  */
-function dc_admin_partner_ids(): array
-{
+function dc_admin_partner_ids(
+    ?string $partnerType = null
+): array {
+    $partners =
+        dc_partners(false, true);
+
+    if ($partnerType !== null) {
+        $partners = array_values(
+            array_filter(
+                $partners,
+                static fn (
+                    array $partner
+                ): bool =>
+                    (string) (
+                        $partner[
+                            'partner_type'
+                        ]
+                        ?? 'brand'
+                    ) === $partnerType
+            )
+        );
+    }
+
     return array_values(
         array_map(
             static fn (
@@ -50,7 +72,7 @@ function dc_admin_partner_ids(): array
                     $partner['id']
                     ?? 0
                 ),
-            dc_partners(false, true)
+            $partners
         )
     );
 }
@@ -59,8 +81,27 @@ function dc_admin_reorder_partner(
     int $partnerId,
     string $direction
 ): bool {
+    $partner =
+        dc_admin_partners_find(
+            $partnerId
+        );
+
+    if ($partner === null) {
+        return false;
+    }
+
+    $partnerType =
+        (string) (
+            $partner[
+                'partner_type'
+            ]
+            ?? 'brand'
+        );
+
     $ids =
-        dc_admin_partner_ids();
+        dc_admin_partner_ids(
+            $partnerType
+        );
 
     $index =
         array_search(
@@ -542,24 +583,47 @@ function dc_admin_valid_partner_url(
 
 function dc_admin_validate_partner(
     string $name,
-    string $catalogUrl
+    string $catalogUrl,
+    string $partnerType
 ): ?string {
+    if (
+        !in_array(
+            $partnerType,
+            [
+                'brand',
+                'catalog',
+            ],
+            true
+        )
+    ) {
+        return 'Choose whether this record is a brand or catalog.';
+    }
+
     if ($name === '') {
-        return 'Partner or supplier name is required.';
+        return $partnerType === 'catalog'
+            ? 'Catalog supplier name is required.'
+            : 'Brand name is required.';
     }
 
     if (
         mb_strlen($name)
         > 100
     ) {
-        return 'Partner or supplier name must be 100 characters or fewer.';
+        return 'Name must be 100 characters or fewer.';
+    }
+
+    if (
+        $partnerType === 'catalog'
+        && $catalogUrl === ''
+    ) {
+        return 'Catalog URL is required for catalog records.';
     }
 
     if (
         mb_strlen($catalogUrl)
         > 2048
     ) {
-        return 'Catalog page link must be 2,048 characters or fewer.';
+        return 'Destination URL must be 2,048 characters or fewer.';
     }
 
     if (
@@ -567,7 +631,7 @@ function dc_admin_validate_partner(
             $catalogUrl
         )
     ) {
-        return 'Enter a complete catalog URL beginning with http:// or https://.';
+        return 'Enter a complete URL beginning with http:// or https://.';
     }
 
     return null;
@@ -833,9 +897,8 @@ if (
         dc_admin_update_content_fields(
             $postedContent,
             [
+                'catalog_brands_label',
                 'catalog_panel_eyebrow',
-                'catalog_panel_heading',
-                'catalog_panel_intro',
             ],
             'partners'
         );
@@ -862,10 +925,20 @@ if (
             )
         );
 
+        $partnerType = strtolower(
+            trim(
+                (string) (
+                    $_POST['partner_type']
+                    ?? 'brand'
+                )
+            )
+        );
+
         $validationError =
             dc_admin_validate_partner(
                 $partnerName,
-                $catalogUrl
+                $catalogUrl,
+                $partnerType
             );
 
         if ($validationError !== null) {
@@ -913,6 +986,9 @@ if (
 
         $partnerId =
             dc_create_partner([
+                'partner_type' =>
+                    $partnerType,
+
                 'name' =>
                     $partnerName,
 
@@ -937,7 +1013,7 @@ if (
         if ($partnerId === null) {
             flash(
                 'error',
-                'The partner could not be created.'
+                'The brand or catalog could not be created.'
             );
 
             dc_admin_redirect(
@@ -966,7 +1042,7 @@ if (
             if (!$uploaded) {
                 flash(
                     'warning',
-                    'Partner created, but its logo was not uploaded: '
+                    'Brand or catalog created, but its logo was not uploaded: '
                     . $message
                 );
 
@@ -979,7 +1055,7 @@ if (
 
         flash(
             'success',
-            'Partner created.'
+            'Brand or catalog created.'
         );
 
         dc_admin_redirect(
@@ -1009,7 +1085,7 @@ if (
         if ($partner === null) {
             flash(
                 'error',
-                'The selected partner could not be found.'
+                'The selected brand or catalog could not be found.'
             );
 
             dc_admin_redirect(
@@ -1031,10 +1107,20 @@ if (
             )
         );
 
+        $partnerType = strtolower(
+            trim(
+                (string) (
+                    $_POST['partner_type']
+                    ?? 'brand'
+                )
+            )
+        );
+
         $validationError =
             dc_admin_validate_partner(
                 $partnerName,
-                $catalogUrl
+                $catalogUrl,
+                $partnerType
             );
 
         if ($validationError !== null) {
@@ -1084,6 +1170,9 @@ if (
             dc_update_partner(
                 $partnerId,
                 [
+                    'partner_type' =>
+                        $partnerType,
+
                     'name' =>
                         $partnerName,
 
@@ -1115,7 +1204,7 @@ if (
         if (!$updated) {
             flash(
                 'error',
-                'The partner could not be updated.'
+                'The brand or catalog could not be updated.'
             );
 
             dc_admin_redirect(
@@ -1144,7 +1233,7 @@ if (
             if (!$uploaded) {
                 flash(
                     'warning',
-                    'Partner details were saved, but the logo was not replaced: '
+                    'Brand or catalog details were saved, but the logo was not replaced: '
                     . $message
                 );
 
@@ -1167,7 +1256,7 @@ if (
 
         flash(
             'success',
-            'Partner updated.'
+            'Brand or catalog updated.'
         );
 
         dc_admin_redirect(
@@ -1205,9 +1294,9 @@ if (
                 $isActive
             ),
             $isActive
-                ? 'Partner shown on the website.'
-                : 'Partner hidden from the website.',
-            'The partner visibility could not be changed.',
+                ? 'Brand or catalog set to show in the draft.'
+                : 'Brand or catalog hidden in the draft.',
+            'The brand or catalog visibility could not be changed.',
             'partners',
             'partner-' . $partnerId
         );
@@ -1241,8 +1330,8 @@ if (
                 $partnerId,
                 $direction
             ),
-            'Partner order updated.',
-            'The partner order could not be updated.',
+            'Brand or catalog order updated.',
+            'The brand or catalog order could not be updated.',
             'partners',
             'partner-' . $partnerId
         );
@@ -1269,8 +1358,8 @@ if (
             dc_admin_delete_partner_record(
                 $partnerId
             ),
-            'Partner permanently deleted.',
-            'The partner could not be deleted.',
+            'Brand or catalog permanently deleted.',
+            'The brand or catalog could not be deleted.',
             'partners'
         );
     }
@@ -1328,39 +1417,29 @@ $catalogFieldConfiguration = [
             4,
     ],
 
+    'catalog_brands_label' => [
+        'label' =>
+            'Heading above the brand logos',
+
+        'textarea' =>
+            false,
+    ],
+
     'catalog_panel_eyebrow' => [
         'label' =>
-            'Small label inside the catalog help panel',
+            'Heading above the catalog logos',
 
         'textarea' =>
             false,
     ],
 
-    'catalog_panel_heading' => [
-        'label' =>
-            'Catalog help-panel heading',
-
-        'textarea' =>
-            false,
-    ],
-
-    'catalog_panel_intro' => [
-        'label' =>
-            'Catalog help-panel paragraph',
-
-        'textarea' =>
-            true,
-
-        'rows' =>
-            5,
-    ],
 ];
 
 dc_admin_render_catalog_content_form(
     'update_catalogs_intro',
     'Catalogs Introduction',
-    'Edit the heading and introduction above the partner logos.',
-    'Publish Catalogs Introduction',
+    'Edit the heading and introduction above the brands and catalogs.',
+    'Save Catalogs Introduction to Draft',
     [
         'catalogs_eyebrow',
         'catalogs_heading',
@@ -1372,13 +1451,12 @@ dc_admin_render_catalog_content_form(
 
 dc_admin_render_catalog_content_form(
     'update_catalog_help',
-    'Catalog Help Panel',
-    'Edit the separate help panel beside the partner logos.',
-    'Publish Catalog Help Panel',
+    'Brand & Catalog Labels',
+    'Edit the headings shown above the brand and catalog logos.',
+    'Save Brand & Catalog Labels to Draft',
     [
+        'catalog_brands_label',
         'catalog_panel_eyebrow',
-        'catalog_panel_heading',
-        'catalog_panel_intro',
     ],
     $catalogContentRecords,
     $catalogFieldConfiguration
@@ -1386,6 +1464,58 @@ dc_admin_render_catalog_content_form(
 
 $partners =
     dc_partners(false, true);
+
+$brandIds = array_values(
+    array_map(
+        static fn (
+            array $partner
+        ): int =>
+            (int) (
+                $partner['id']
+                ?? 0
+            ),
+        array_values(
+            array_filter(
+                $partners,
+                static fn (
+                    array $partner
+                ): bool =>
+                    (string) (
+                        $partner[
+                            'partner_type'
+                        ]
+                        ?? 'brand'
+                    ) === 'brand'
+            )
+        )
+    )
+);
+
+$catalogIds = array_values(
+    array_map(
+        static fn (
+            array $partner
+        ): int =>
+            (int) (
+                $partner['id']
+                ?? 0
+            ),
+        array_values(
+            array_filter(
+                $partners,
+                static fn (
+                    array $partner
+                ): bool =>
+                    (string) (
+                        $partner[
+                            'partner_type'
+                        ]
+                        ?? 'brand'
+                    ) === 'catalog'
+            )
+        )
+    )
+);
 
 ?>
 <div
@@ -1395,11 +1525,11 @@ $partners =
         <p
             class="text-uppercase text-primary fw-semibold small mb-1"
         >
-            Partner Cards
+            Brands & Catalogs
         </p>
 
         <h2 class="h4 mb-0">
-            Catalog Partners
+            Existing Brands and Catalogs
         </h2>
     </div>
 
@@ -1414,11 +1544,12 @@ $partners =
 >
     <div class="card-header bg-white py-3">
         <h2 class="h5 mb-1">
-            Add a Partner
+            Add a Brand or Catalog
         </h2>
 
         <p class="small text-body-secondary mb-0">
-            Add a supplier or brand logo and its approved catalog link.
+            Brands and catalogs both appear as logo tiles. Catalogs also
+            appear in the Catalogs navigation dropdown.
         </p>
     </div>
 
@@ -1439,9 +1570,38 @@ $partners =
                 <div class="col-lg-6">
                     <label
                         class="form-label"
+                        for="new_partner_type"
+                    >
+                        Type
+                    </label>
+
+                    <select
+                        class="form-select"
+                        id="new_partner_type"
+                        name="partner_type"
+                        required
+                    >
+                        <option value="brand" selected>
+                            Brand
+                        </option>
+
+                        <option value="catalog">
+                            Catalog
+                        </option>
+                    </select>
+
+                    <div class="form-text">
+                        Catalogs require a destination URL. Logos are used
+                        for both brand and catalog tiles.
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <label
+                        class="form-label"
                         for="new_partner_name"
                     >
-                        Partner or supplier name
+                        Brand or catalog name
                     </label>
 
                     <input
@@ -1464,7 +1624,7 @@ $partners =
                         class="form-label"
                         for="new_partner_url"
                     >
-                        Catalog page link
+                        Destination URL
                     </label>
 
                     <input
@@ -1478,7 +1638,7 @@ $partners =
                     >
 
                     <div class="form-text">
-                        Optional. Use the complete public catalog URL.
+                        Required for catalogs. Optional for brands.
                     </div>
                 </div>
 
@@ -1487,7 +1647,7 @@ $partners =
                         class="form-label"
                         for="new_partner_logo"
                     >
-                        Partner logo
+                        Logo
                     </label>
 
                     <input
@@ -1525,7 +1685,7 @@ $partners =
                             class="form-check-label"
                             for="new_partner_active"
                         >
-                            Show this partner on the website immediately
+                            Show this brand or catalog on the website immediately
                         </label>
                     </div>
                 </div>
@@ -1535,7 +1695,7 @@ $partners =
                 class="btn btn-primary mt-4"
                 type="submit"
             >
-                Create Partner
+                Create Brand or Catalog
             </button>
         </form>
     </div>
@@ -1543,7 +1703,7 @@ $partners =
 
 <?php if ($partners === []): ?>
     <div class="alert alert-light border">
-        No catalog partners have been added.
+        No brands or catalogs have been added.
     </div>
 <?php else: ?>
     <div class="vstack gap-4">
@@ -1568,6 +1728,35 @@ $partners =
                     $partner['name']
                     ?? 'Unnamed Partner'
                 );
+
+            $partnerType =
+                (string) (
+                    $partner[
+                        'partner_type'
+                    ]
+                    ?? 'brand'
+                );
+
+            $typeIds =
+                $partnerType === 'catalog'
+                    ? $catalogIds
+                    : $brandIds;
+
+            $typeIndex =
+                array_search(
+                    $partnerId,
+                    $typeIds,
+                    true
+                );
+
+            if ($typeIndex === false) {
+                $typeIndex = 0;
+            }
+
+            $typeLabel =
+                $partnerType === 'catalog'
+                    ? 'Catalog'
+                    : 'Brand';
             ?>
 
             <article
@@ -1582,15 +1771,23 @@ $partners =
                             <?= e($partnerName) ?>
                         </h3>
 
-                        <span
-                            class="badge <?= $isActive
-                                ? 'text-bg-success'
-                                : 'text-bg-secondary' ?>"
-                        >
-                            <?= $isActive
-                                ? 'Published'
-                                : 'Hidden' ?>
-                        </span>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span
+                                class="badge text-bg-primary"
+                            >
+                                <?= e($typeLabel) ?>
+                            </span>
+
+                            <span
+                                class="badge <?= $isActive
+                                    ? 'text-bg-success'
+                                    : 'text-bg-secondary' ?>"
+                            >
+                                <?= $isActive
+                                    ? 'Visible in Draft'
+                                    : 'Hidden' ?>
+                            </span>
+                        </div>
                     </div>
 
                     <div class="d-flex flex-wrap gap-2">
@@ -1624,7 +1821,7 @@ $partners =
                             <button
                                 class="btn btn-outline-secondary btn-sm"
                                 type="submit"
-                                <?= $index === 0
+                                <?= $typeIndex === 0
                                     ? 'disabled'
                                     : '' ?>
                             >
@@ -1662,8 +1859,8 @@ $partners =
                             <button
                                 class="btn btn-outline-secondary btn-sm"
                                 type="submit"
-                                <?= $index
-                                    === count($partners) - 1
+                                <?= $typeIndex
+                                    === count($typeIds) - 1
                                         ? 'disabled'
                                         : '' ?>
                             >
@@ -1705,8 +1902,8 @@ $partners =
                                 type="submit"
                             >
                                 <?= $isActive
-                                    ? 'Hide'
-                                    : 'Publish' ?>
+                                    ? 'Hide in Draft'
+                                    : 'Show in Draft' ?>
                             </button>
                         </form>
                     </div>
@@ -1736,9 +1933,48 @@ $partners =
                                 <div class="mb-3">
                                     <label
                                         class="form-label"
+                                        for="partner_type_<?= $partnerId ?>"
+                                    >
+                                        Type
+                                    </label>
+
+                                    <select
+                                        class="form-select"
+                                        id="partner_type_<?= $partnerId ?>"
+                                        name="partner_type"
+                                        required
+                                    >
+                                        <option
+                                            value="brand"
+                                            <?= $partnerType === 'brand'
+                                                ? 'selected'
+                                                : '' ?>
+                                        >
+                                            Brand
+                                        </option>
+
+                                        <option
+                                            value="catalog"
+                                            <?= $partnerType === 'catalog'
+                                                ? 'selected'
+                                                : '' ?>
+                                        >
+                                            Catalog
+                                        </option>
+                                    </select>
+
+                                    <div class="form-text">
+                                        Catalogs appear as logo tiles and in the
+                                        navigation dropdown.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label
+                                        class="form-label"
                                         for="partner_name_<?= $partnerId ?>"
                                     >
-                                        Partner or supplier name
+                                        Brand or catalog name
                                     </label>
 
                                     <input
@@ -1764,7 +2000,7 @@ $partners =
                                         class="form-label"
                                         for="partner_url_<?= $partnerId ?>"
                                     >
-                                        Catalog page link
+                                        Destination URL
                                     </label>
 
                                     <input
@@ -1802,7 +2038,7 @@ $partners =
                                         class="form-check-label"
                                         for="partner_active_<?= $partnerId ?>"
                                     >
-                                        Show this partner on the website
+                                        Show this brand or catalog on the website
                                     </label>
                                 </div>
                             </div>
@@ -1860,7 +2096,7 @@ $partners =
                                     class="form-label"
                                     for="partner_logo_<?= $partnerId ?>"
                                 >
-                                    Replace logo
+                                    Replace brand logo
                                 </label>
 
                                 <input
@@ -1911,7 +2147,7 @@ $partners =
                             class="btn btn-primary mt-4"
                             type="submit"
                         >
-                            Save Partner
+                            Save Brand or Catalog
                         </button>
                     </form>
 
@@ -1919,7 +2155,7 @@ $partners =
 
                     <form
                         method="post"
-                        onsubmit="return confirm('Permanently delete this partner?');"
+                        onsubmit="return confirm('Permanently delete this brand or catalog?');"
                     >
                         <?= csrf_field() ?>
 
@@ -1945,7 +2181,7 @@ $partners =
                             class="btn btn-outline-danger btn-sm"
                             type="submit"
                         >
-                            Delete Partner
+                            Delete Brand or Catalog
                         </button>
                     </form>
                 </div>

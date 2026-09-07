@@ -695,7 +695,9 @@ function dc_promotion_status_label(
     string $status
 ): string {
     return match ($status) {
-        'active' => 'Currently Displayed',
+        'active' => dc_is_draft_mode()
+            ? 'Displayed in Draft'
+            : 'Currently Displayed',
         'scheduled' => 'Scheduled',
         'expired' => 'Expired',
         'hidden' => 'Hidden',
@@ -862,7 +864,7 @@ function dc_promotions(
     try {
         $statement = $pdo->query(
             'SELECT *
-             FROM promotions
+             FROM ' . dc_staging_table('promotions') . '
              ORDER BY
                 sort_order,
                 id'
@@ -960,7 +962,7 @@ function dc_current_promotion(
     try {
         $statement = $pdo->prepare(
             'SELECT *
-             FROM promotions
+             FROM ' . dc_staging_table('promotions') . '
              WHERE is_active = 1
                AND (
                     starts_at IS NULL
@@ -1039,12 +1041,12 @@ function dc_create_promotion(
                         MAX(sort_order),
                         0
                     ) + 10
-                 FROM promotions'
+                 FROM ' . dc_staging_table('promotions') . ''
             )
             ->fetchColumn();
 
         $statement = $pdo->prepare(
-            'INSERT INTO promotions (
+            'INSERT INTO ' . dc_staging_table('promotions') . ' (
                 promotion_type,
                 seasonal_theme,
                 title,
@@ -1110,6 +1112,7 @@ function dc_create_promotion(
         ]);
 
         dc_forget_promotion_cache();
+        dc_staging_mark_dirty();
 
         return (int) $pdo
             ->lastInsertId();
@@ -1154,7 +1157,7 @@ function dc_update_promotion(
 
     try {
         $statement = $pdo->prepare(
-            'UPDATE promotions
+            'UPDATE ' . dc_staging_table('promotions') . '
              SET
                 promotion_type =
                     :promotion_type,
@@ -1228,6 +1231,7 @@ function dc_update_promotion(
 
         if ($updated) {
             dc_forget_promotion_cache();
+            dc_staging_mark_dirty();
         }
 
         return $updated;
@@ -1256,7 +1260,7 @@ function dc_delete_promotion(
 
     try {
         $statement = $pdo->prepare(
-            'DELETE FROM promotions
+            'DELETE FROM ' . dc_staging_table('promotions') . '
              WHERE id = :id'
         );
 
@@ -1269,6 +1273,7 @@ function dc_delete_promotion(
 
         if ($deleted) {
             dc_forget_promotion_cache();
+            dc_staging_mark_dirty();
         }
 
         return $deleted;
@@ -1309,7 +1314,7 @@ function dc_reorder_promotion(
     try {
         $statement = $pdo->query(
             'SELECT id
-             FROM promotions
+             FROM ' . dc_staging_table('promotions') . '
              ORDER BY
                 sort_order,
                 id'
@@ -1359,7 +1364,7 @@ function dc_reorder_promotion(
         $pdo->beginTransaction();
 
         $update = $pdo->prepare(
-            'UPDATE promotions
+            'UPDATE ' . dc_staging_table('promotions') . '
              SET sort_order = :sort_order
              WHERE id = :id'
         );
@@ -1380,6 +1385,7 @@ function dc_reorder_promotion(
         $pdo->commit();
 
         dc_forget_promotion_cache();
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {

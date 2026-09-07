@@ -627,33 +627,61 @@ function dc_media_usage_count(int $assetId): int
                 (
                     SELECT COUNT(*)
                     FROM site_media_slots
-                    WHERE media_asset_id = :slot_id
+                    WHERE media_asset_id = :slot_live_id
+                )
+                +
+                (
+                    SELECT COUNT(*)
+                    FROM site_media_slots_draft
+                    WHERE media_asset_id = :slot_draft_id
                 )
                 +
                 (
                     SELECT COUNT(*)
                     FROM services
-                    WHERE image_asset_id = :service_id
+                    WHERE image_asset_id = :service_live_id
+                )
+                +
+                (
+                    SELECT COUNT(*)
+                    FROM services_draft
+                    WHERE image_asset_id = :service_draft_id
                 )
                 +
                 (
                     SELECT COUNT(*)
                     FROM profiles
-                    WHERE image_asset_id = :profile_id
+                    WHERE image_asset_id = :profile_live_id
+                )
+                +
+                (
+                    SELECT COUNT(*)
+                    FROM profiles_draft
+                    WHERE image_asset_id = :profile_draft_id
                 )
                 +
                 (
                     SELECT COUNT(*)
                     FROM partners
-                    WHERE logo_asset_id = :partner_id
+                    WHERE logo_asset_id = :partner_live_id
+                )
+                +
+                (
+                    SELECT COUNT(*)
+                    FROM partners_draft
+                    WHERE logo_asset_id = :partner_draft_id
                 ) AS usage_count'
         );
 
         $statement->execute([
-            'slot_id' => $assetId,
-            'service_id' => $assetId,
-            'profile_id' => $assetId,
-            'partner_id' => $assetId,
+            'slot_live_id' => $assetId,
+            'slot_draft_id' => $assetId,
+            'service_live_id' => $assetId,
+            'service_draft_id' => $assetId,
+            'profile_live_id' => $assetId,
+            'profile_draft_id' => $assetId,
+            'partner_live_id' => $assetId,
+            'partner_draft_id' => $assetId,
         ]);
 
         return (int) $statement->fetchColumn();
@@ -772,6 +800,56 @@ function dc_delete_unused_managed_media_asset(
 /**
  * Return the current media ID assigned to a fixed global slot.
  */
+/**
+ * Remove managed uploads that are referenced by neither live nor draft data.
+ *
+ * This is called after publishing or discarding a draft. It is deliberately
+ * conservative: any failure to determine usage leaves the asset in place.
+ */
+function dc_cleanup_unused_managed_media_assets(): void
+{
+    $pdo = database();
+
+    if ($pdo === null) {
+        return;
+    }
+
+    try {
+        $statement = $pdo->query(
+            'SELECT id
+             FROM media_assets
+             WHERE is_managed_upload = 1
+             ORDER BY id'
+        );
+
+        $assetIds = $statement->fetchAll(
+            PDO::FETCH_COLUMN
+        );
+
+        if (!is_array($assetIds)) {
+            return;
+        }
+
+        foreach ($assetIds as $assetId) {
+            $id = (int) $assetId;
+
+            if (
+                $id > 0
+                && dc_media_usage_count($id) === 0
+            ) {
+                dc_delete_unused_managed_media_asset(
+                    $id
+                );
+            }
+        }
+    } catch (Throwable $exception) {
+        log_message(
+            'Unable to clean unused managed uploads: '
+            . $exception->getMessage()
+        );
+    }
+}
+
 function dc_site_media_asset_id(
     string $slotKey
 ): ?int {
@@ -784,7 +862,7 @@ function dc_site_media_asset_id(
     try {
         $statement = $pdo->prepare(
             'SELECT media_asset_id
-             FROM site_media_slots
+             FROM ' . dc_staging_table('site_media_slots') . '
              WHERE slot_key = :slot_key
              LIMIT 1'
         );
@@ -1000,7 +1078,9 @@ function dc_record_media_context(
             . $profile['column']
             . ' AS media_asset_id
              FROM '
-            . $profile['table']
+            . dc_staging_table(
+                (string) $profile['table']
+            )
             . '
              WHERE id = :id
              LIMIT 1'
@@ -1061,7 +1141,9 @@ function dc_assign_record_media(
     try {
         $statement = $pdo->prepare(
             'UPDATE '
-            . $profile['table']
+            . dc_staging_table(
+                (string) $profile['table']
+            )
             . '
              SET '
             . $profile['column']
@@ -1089,7 +1171,9 @@ function dc_assign_record_media(
             $check = $pdo->prepare(
                 'SELECT 1
                  FROM '
-                . $profile['table']
+                . dc_staging_table(
+                    (string) $profile['table']
+                )
                 . '
                  WHERE id = :id'
             );
@@ -1110,6 +1194,8 @@ function dc_assign_record_media(
         dc_forget_content_cache(
             $profile['cache_all']
         );
+
+        dc_staging_mark_dirty();
 
         return true;
     } catch (Throwable $exception) {

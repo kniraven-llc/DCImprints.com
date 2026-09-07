@@ -4,6 +4,17 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/app/bootstrap.php';
 
+$isPreviewMode = dc_is_preview_mode();
+
+if ($isPreviewMode) {
+    require_admin();
+
+    header(
+        'X-Robots-Tag: noindex, nofollow, noarchive',
+        true
+    );
+}
+
 const DC_QUOTE_ATTACHMENT_MAX_BYTES = 2_999_999;
 
 /**
@@ -314,37 +325,196 @@ if ($profileItems === []) {
 }
 
 $defaultProfile = $profileItems[0];
-$partnerLogoSlots = [];
-foreach (dc_partners(true) as $partnerRecord) {
-    $logoAssetId = (int) ($partnerRecord['logo_asset_id'] ?? 0);
-    $logoAsset = $logoAssetId > 0 ? dc_media_asset($logoAssetId) : null;
-    $imagePath = trim((string) ($logoAsset['file_path'] ?? ''));
-    $partnerName = trim((string) ($partnerRecord['name'] ?? ''));
-    $placeholderLabel = trim((string) ($partnerRecord['placeholder_label'] ?? 'Partner logo'));
+$brandLogoSlots = [];
 
-    $partnerLogoSlots[] = [
-        'name' => $partnerName,
-        'url' => trim((string) ($partnerRecord['catalog_url'] ?? '')),
-        'image' => $imagePath,
-        'image_exists' => $imagePath !== '' && dc_home_public_asset_exists($imagePath),
-        'alt' => trim((string) (
-            $logoAsset['alt_text']
-            ?? ($partnerName !== '' ? $partnerName : $placeholderLabel)
-        )),
-        'placeholder' => $placeholderLabel,
+foreach (
+    dc_partners_by_type(
+        'brand',
+        true
+    )
+    as $partnerRecord
+) {
+    $logoAssetId = (int) (
+        $partnerRecord[
+            'logo_asset_id'
+        ]
+        ?? 0
+    );
+
+    $logoAsset =
+        $logoAssetId > 0
+            ? dc_media_asset(
+                $logoAssetId
+            )
+            : null;
+
+    $imagePath = trim(
+        (string) (
+            $logoAsset[
+                'file_path'
+            ]
+            ?? ''
+        )
+    );
+
+    $partnerName = trim(
+        (string) (
+            $partnerRecord['name']
+            ?? ''
+        )
+    );
+
+    $placeholderLabel = trim(
+        (string) (
+            $partnerRecord[
+                'placeholder_label'
+            ]
+            ?? 'Partner logo'
+        )
+    );
+
+    $brandLogoSlots[] = [
+        'name' =>
+            $partnerName,
+
+        'url' =>
+            trim(
+                (string) (
+                    $partnerRecord[
+                        'catalog_url'
+                    ]
+                    ?? ''
+                )
+            ),
+
+        'image' =>
+            $imagePath,
+
+        'image_exists' =>
+            $imagePath !== ''
+            && dc_home_public_asset_exists(
+                $imagePath
+            ),
+
+        'alt' =>
+            trim(
+                (string) (
+                    $logoAsset[
+                        'alt_text'
+                    ]
+                    ?? (
+                        $partnerName !== ''
+                            ? $partnerName
+                            : $placeholderLabel
+                    )
+                )
+            ),
+
+        'placeholder' =>
+            $placeholderLabel,
+    ];
+}
+
+$catalogItems = [];
+
+foreach (
+    dc_partners_by_type(
+        'catalog',
+        true
+    )
+    as $catalogRecord
+) {
+    $catalogName = trim(
+        (string) (
+            $catalogRecord['name']
+            ?? ''
+        )
+    );
+
+    $catalogUrl = trim(
+        (string) (
+            $catalogRecord[
+                'catalog_url'
+            ]
+            ?? ''
+        )
+    );
+
+    if (
+        $catalogName === ''
+        || $catalogUrl === ''
+    ) {
+        continue;
+    }
+
+    $logoAssetId = (int) (
+        $catalogRecord[
+            'logo_asset_id'
+        ]
+        ?? 0
+    );
+
+    $logoAsset =
+        $logoAssetId > 0
+            ? dc_media_asset(
+                $logoAssetId
+            )
+            : null;
+
+    $imagePath = trim(
+        (string) (
+            $logoAsset[
+                'file_path'
+            ]
+            ?? ''
+        )
+    );
+
+    $catalogItems[] = [
+        'name' =>
+            $catalogName,
+
+        'url' =>
+            $catalogUrl,
+
+        'image' =>
+            $imagePath,
+
+        'image_exists' =>
+            $imagePath !== ''
+            && dc_home_public_asset_exists(
+                $imagePath
+            ),
+
+        'alt' =>
+            trim(
+                (string) (
+                    $logoAsset[
+                        'alt_text'
+                    ]
+                    ?? $catalogName
+                    . ' logo'
+                )
+            ),
+
+        'placeholder' =>
+            $catalogName,
     ];
 }
 
 $serviceOptions = [];
+
 foreach ($services as $service) {
     if ($service['quote_label'] !== '') {
         $serviceOptions[] = $service['quote_label'];
     }
 }
+
 $serviceOptions[] = 'Other / Not Sure';
 $serviceOptions = array_values(array_unique($serviceOptions));
 
 $errors = [];
+
 $form = [
     'name' => '',
     'email' => '',
@@ -355,7 +525,7 @@ $form = [
     'message' => '',
 ];
 
-if (is_post()) {
+if (is_post() && !$isPreviewMode) {
     $form = [
         'name' => trim((string) ($_POST['name'] ?? '')),
         'email' => trim((string) ($_POST['email'] ?? '')),
@@ -366,8 +536,59 @@ if (is_post()) {
         'message' => trim((string) ($_POST['message'] ?? '')),
     ];
 
+    $honeypot =
+        trim(
+            (string) (
+                $_POST['website_url']
+                ?? ''
+            )
+        );
+
+    $timingStatus =
+        dc_quote_form_timing_status(
+            isset($_POST['quote_form_token'])
+                ? (string) $_POST['quote_form_token']
+                : null
+        );
+
+    /*
+     * A populated honeypot, missing timing token, or implausibly fast
+     * submission is treated as automated.
+     *
+     * The bot receives the normal success response while no email is sent.
+     * This makes the protection much harder to tune against.
+     */
+    if (
+        $honeypot !== ''
+        || $timingStatus === 'missing'
+        || $timingStatus === 'too_fast'
+    ) {
+        $reason = $honeypot !== ''
+            ? 'honeypot'
+            : $timingStatus;
+
+        log_message(
+            'Quote form submission silently discarded by anti-spam check: '
+            . $reason
+            . '.'
+        );
+
+        flash(
+            'success',
+            'Thank you. Your request has been sent.'
+        );
+
+        redirect('/#contact');
+    }
+
+    if ($timingStatus === 'expired') {
+        $errors['form'] =
+            'Your form session expired. Refresh the page and try again.';
+    }
+
     if (!verify_csrf($_POST['csrf_token'] ?? null)) {
-        $errors['form'] = 'Your session expired. Refresh the page and try again.';
+        $errors['form'] =
+            'Your session expired. Refresh the page and try again.';
     }
 
     if ($form['name'] === '' || mb_strlen($form['name']) > 100) {
@@ -394,19 +615,54 @@ if (is_post()) {
         $errors['message'] = 'Describe your project in 5,000 characters or fewer.';
     }
 
-    [$artwork, $artworkError] = dc_home_validate_artwork_upload($_FILES['artwork'] ?? []);
+    [$artwork, $artworkError] =
+        dc_home_validate_artwork_upload(
+            $_FILES['artwork']
+            ?? []
+        );
 
     if ($artworkError !== null) {
         $errors['artwork'] = $artworkError;
     }
 
     if ($errors === []) {
-        if (send_quote_email($form, $artwork, $businessName)) {
-            flash('success', 'Thank you. Your request has been sent.');
+        /*
+         * Only otherwise-valid submissions consume rate-limit capacity.
+         * This means a legitimate customer correcting a validation mistake
+         * is not penalized.
+         */
+        if (
+            dc_quote_rate_limit_exceeded()
+        ) {
+            log_message(
+                'Quote form submission silently discarded by anti-spam check: rate_limit.'
+            );
+
+            flash(
+                'success',
+                'Thank you. Your request has been sent.'
+            );
+
             redirect('/#contact');
         }
 
-        $errors['form'] = 'The message could not be sent. Please contact '
+        if (
+            send_quote_email(
+                $form,
+                $artwork,
+                $businessName
+            )
+        ) {
+            flash(
+                'success',
+                'Thank you. Your request has been sent.'
+            );
+
+            redirect('/#contact');
+        }
+
+        $errors['form'] =
+            'The message could not be sent. Please contact '
             . $businessName
             . ' directly.';
     }
@@ -420,12 +676,39 @@ $heroSecondaryButtonLabel = dc_content('hero_secondary_button_label', 'Explore S
 $servicesEyebrow = dc_content('services_eyebrow', 'What We Do');
 $servicesHeading = dc_content('services_heading', 'Services for organizations of every size');
 $serviceCardButtonLabel = dc_content('service_card_button_label', 'Request a quote');
-$quoteBandHeading = dc_content('quote_band_heading', 'Have a project in mind?');
-$quoteBandText = dc_content(
-    'quote_band_text',
-    'Tell DC Imprints what you need, and the team will help identify the right apparel, products, and production approach.'
-);
-$quoteBandButtonLabel = dc_content('quote_band_button_label', 'Start Your Quote');
+$howItWorksEyebrow = dc_content('how_it_works_eyebrow', 'How It Works');
+$howItWorksHeading = dc_content('how_it_works_heading', 'From Idea to Finished Product');
+$howItWorksSteps = [
+    [
+        'title' => dc_content('how_it_works_step_1_title', 'Tell us what you need'),
+        'text' => dc_content(
+            'how_it_works_step_1_text',
+            'Send us your idea, artwork, quantity and deadline.'
+        ),
+    ],
+    [
+        'title' => dc_content('how_it_works_step_2_title', 'We’ll help you figure it out'),
+        'text' => dc_content(
+            'how_it_works_step_2_text',
+            'We’ll recommend the right products, decoration method and options.'
+        ),
+    ],
+    [
+        'title' => dc_content('how_it_works_step_3_title', 'Approve your project'),
+        'text' => dc_content(
+            'how_it_works_step_3_text',
+            'Review artwork and pricing.'
+        ),
+    ],
+    [
+        'title' => dc_content('how_it_works_step_4_title', 'We make it'),
+        'text' => dc_content(
+            'how_it_works_step_4_text',
+            'We produce your apparel and products and get them to you.'
+        ),
+    ],
+];
+$howItWorksButtonLabel = dc_content('how_it_works_button_label', 'Start Your Project');
 $reviewsEyebrow = dc_content('reviews_eyebrow', 'Customer Feedback');
 $reviewsHeading = dc_content('reviews_heading', 'Trusted by local customers');
 $reviewsIntro = dc_content(
@@ -446,12 +729,8 @@ $catalogsIntro = dc_content(
     'catalogs_intro',
     'Browse supplier catalogs and brand partners, then contact DC Imprints for help choosing the right products.'
 );
-$catalogPanelEyebrow = dc_content('catalog_panel_eyebrow', 'Browse Catalogs');
-$catalogPanelHeading = dc_content('catalog_panel_heading', 'Find the right product for your project');
-$catalogPanelIntro = dc_content(
-    'catalog_panel_intro',
-    'Use the approved supplier links below to explore available apparel, promotional products, and accessories.'
-);
+$catalogBrandsLabel = dc_content('catalog_brands_label', 'Some of our brands');
+$catalogPanelEyebrow = dc_content('catalog_panel_eyebrow', 'Some of our catalogs');
 $catalogButtonLabel = dc_content('catalog_button_label', 'Ask for Recommendations');
 $quoteEyebrow = dc_content('quote_eyebrow', 'Contact DC Imprints');
 $quoteHeading = dc_content('quote_heading', 'Request a Quote');
@@ -471,11 +750,11 @@ $locationCallLabel = dc_content('location_call_label', 'Call DC Imprints');
 
 require APP_ROOT . '/app/layout/header.php';
 ?>
+
 <?php
 $promotionDisplayArea = 'announcement';
 require APP_ROOT . '/app/layout/promotions.php';
 ?>
-
 
 <section class="dc-hero">
     <div class="dc-hero__media" aria-hidden="true">
@@ -570,18 +849,69 @@ require APP_ROOT . '/app/layout/promotions.php';
     </div>
 </section>
 
-<section class="quote-band py-5" aria-label="Quote call to action">
-    <div class="container">
-        <div class="row align-items-center g-4">
-            <div class="col-lg-8">
-                <h2 class="h1 mb-2"><?= e($quoteBandHeading) ?></h2>
-                <p class="lead mb-0"><?= e($quoteBandText) ?></p>
+<section class="how-it-works py-5" aria-labelledby="how-it-works-heading">
+    <div class="container py-lg-4">
+        <div class="row mb-4 mb-lg-5">
+            <div class="col-lg-9">
+                <p class="how-it-works__eyebrow text-uppercase fw-semibold mb-2">
+                    <?= e($howItWorksEyebrow) ?>
+                </p>
+
+                <h2
+                    id="how-it-works-heading"
+                    class="display-6 fw-bold mb-0"
+                >
+                    <?= e($howItWorksHeading) ?>
+                </h2>
             </div>
-            <div class="col-lg-4 text-lg-end">
-                <a class="btn btn-light btn-lg px-4" href="#contact">
-                    <?= e($quoteBandButtonLabel) ?>
-                </a>
-            </div>
+        </div>
+
+        <ol class="how-it-works__steps row g-4 mb-0">
+            <?php foreach (
+                $howItWorksSteps
+                as $stepIndex => $step
+            ): ?>
+                <li
+                    class="col-md-6 col-xl-3"
+                    data-reveal
+                >
+                    <article class="how-it-works__step h-100">
+                        <span
+                            class="how-it-works__number"
+                            aria-hidden="true"
+                        >
+                            <?= e(
+                                (string) (
+                                    $stepIndex + 1
+                                )
+                            ) ?>
+                        </span>
+
+                        <h3 class="h5">
+                            <?= e(
+                                $step['title']
+                            ) ?>
+                        </h3>
+
+                        <p class="mb-0">
+                            <?= e(
+                                $step['text']
+                            ) ?>
+                        </p>
+                    </article>
+                </li>
+            <?php endforeach; ?>
+        </ol>
+
+        <div class="mt-4 mt-lg-5">
+            <a
+                class="btn btn-light btn-lg px-4 how-it-works__button"
+                href="#contact"
+            >
+                <?= e(
+                    $howItWorksButtonLabel
+                ) ?>
+            </a>
         </div>
     </div>
 </section>
@@ -709,52 +1039,156 @@ require APP_ROOT . '/app/layout/promotions.php';
         </div>
 
         <div class="row g-4 align-items-stretch">
-            <div class="col-lg-7">
-                <div class="row g-3">
-                    <?php foreach ($partnerLogoSlots as $partner): ?>
-                        <div class="col-6 col-md-4" data-reveal>
-                            <?php if ($partner['url'] !== ''): ?>
-                                <a
-                                    class="catalog-logo-tile h-100"
-                                    href="<?= e($partner['url']) ?>"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    aria-label="<?= e(
-                                        'Open '
-                                        . ($partner['name'] !== '' ? $partner['name'] : $partner['placeholder'])
-                                        . ' catalog'
-                                    ) ?>"
-                                >
-                            <?php else: ?>
-                                <div class="catalog-logo-tile h-100">
-                            <?php endif; ?>
+            <div class="col-lg-8">
+                <section
+                    class="catalog-display-panel h-100"
+                    aria-labelledby="catalog-brands-heading"
+                >
+                    <h3
+                        id="catalog-brands-heading"
+                        class="catalog-section-banner"
+                    >
+                        <?= e($catalogBrandsLabel) ?>
+                    </h3>
 
-                            <?php if ($partner['image_exists']): ?>
-                                <img src="<?= e($partner['image']) ?>" alt="<?= e($partner['alt']) ?>" loading="lazy">
-                            <?php else: ?>
-                                <div class="catalog-logo-placeholder" aria-hidden="true">
-                                    <span><?= e($partner['placeholder']) ?></span>
-                                </div>
-                            <?php endif; ?>
+                    <div class="row g-3">
+                        <?php foreach (
+                            $brandLogoSlots
+                            as $partner
+                        ): ?>
+                            <div
+                                class="col-6 col-md-4"
+                                data-reveal
+                            >
+                                <?php if (
+                                    $partner['url']
+                                    !== ''
+                                ): ?>
+                                    <a
+                                        class="catalog-logo-tile h-100"
+                                        href="<?= e($partner['url']) ?>"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="<?= e(
+                                            'Open '
+                                            . (
+                                                $partner['name']
+                                                !== ''
+                                                    ? $partner['name']
+                                                    : $partner['placeholder']
+                                            )
+                                            . ' website'
+                                        ) ?>"
+                                    >
+                                <?php else: ?>
+                                    <div class="catalog-logo-tile h-100">
+                                <?php endif; ?>
 
-                            <?php if ($partner['url'] !== ''): ?>
-                                </a>
-                            <?php else: ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                                <?php if (
+                                    $partner['image_exists']
+                                ): ?>
+                                    <img
+                                        src="<?= e($partner['image']) ?>"
+                                        alt="<?= e($partner['alt']) ?>"
+                                        loading="lazy"
+                                    >
+                                <?php else: ?>
+                                    <div
+                                        class="catalog-logo-placeholder"
+                                        aria-hidden="true"
+                                    >
+                                        <span>
+                                            <?= e(
+                                                $partner[
+                                                    'placeholder'
+                                                ]
+                                            ) ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (
+                                    $partner['url']
+                                    !== ''
+                                ): ?>
+                                    </a>
+                                <?php else: ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
             </div>
 
-            <div class="col-lg-5">
-                <div class="catalog-link-panel h-100" data-reveal>
-                    <p class="text-uppercase fw-semibold text-primary small mb-2"><?= e($catalogPanelEyebrow) ?></p>
-                    <h3 class="h4"><?= e($catalogPanelHeading) ?></h3>
-                    <p><?= e($catalogPanelIntro) ?></p>
-                    <div class="catalog-link-list"><?= nl2br(e(content('supplier_links'))) ?></div>
-                    <a class="btn btn-primary mt-4" href="#contact"><?= e($catalogButtonLabel) ?></a>
-                </div>
+            <div class="col-lg-4">
+                <section
+                    class="catalog-display-panel catalog-display-panel--catalogs h-100"
+                    aria-labelledby="catalog-list-heading"
+                >
+                    <h3
+                        class="catalog-section-banner"
+                        id="catalog-list-heading"
+                    >
+                        <?= e($catalogPanelEyebrow) ?>
+                    </h3>
+
+                    <?php if ($catalogItems !== []): ?>
+                        <div class="row g-3">
+                            <?php foreach (
+                                $catalogItems
+                                as $catalog
+                            ): ?>
+                                <div
+                                    class="col-6 col-lg-12"
+                                    data-reveal
+                                >
+                                    <a
+                                        class="catalog-logo-tile h-100"
+                                        href="<?= e($catalog['url']) ?>"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="<?= e(
+                                            'Open '
+                                            . $catalog['name']
+                                            . ' catalog'
+                                        ) ?>"
+                                    >
+                                        <?php if (
+                                            $catalog['image_exists']
+                                        ): ?>
+                                            <img
+                                                src="<?= e($catalog['image']) ?>"
+                                                alt="<?= e($catalog['alt']) ?>"
+                                                loading="lazy"
+                                            >
+                                        <?php else: ?>
+                                            <div
+                                                class="catalog-logo-placeholder"
+                                                aria-hidden="true"
+                                            >
+                                                <span>
+                                                    <?= e(
+                                                        $catalog[
+                                                            'placeholder'
+                                                        ]
+                                                    ) ?>
+                                                </span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <a
+                        class="btn btn-primary mt-4"
+                        href="#contact"
+                    >
+                        <?= e($catalogButtonLabel) ?>
+                    </a>
+                </section>
             </div>
         </div>
     </div>
@@ -788,8 +1222,38 @@ require APP_ROOT . '/app/layout/promotions.php';
                             <div class="alert alert-danger" role="alert"><?= e($errors['form']) ?></div>
                         <?php endif; ?>
 
+                        <?php if ($isPreviewMode): ?>
+                            <div
+                                class="alert dc-preview-form-notice"
+                                role="note"
+                            >
+                                <strong>Preview mode:</strong>
+                                This form is shown for layout review only. It cannot send a quote request.
+                            </div>
+                        <?php endif; ?>
+
                         <form method="post" enctype="multipart/form-data" novalidate>
                             <?= csrf_field() ?>
+                            <?= $isPreviewMode
+                                ? ''
+                                : dc_quote_form_token_field() ?>
+
+                            <div
+                                class="dc-form-honeypot"
+                                aria-hidden="true"
+                            >
+                                <label for="website_url">
+                                    Website
+                                </label>
+                                <input
+                                    id="website_url"
+                                    name="website_url"
+                                    type="text"
+                                    value=""
+                                    tabindex="-1"
+                                    autocomplete="off"
+                                >
+                            </div>
 
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -921,7 +1385,13 @@ require APP_ROOT . '/app/layout/promotions.php';
                                 </div>
 
                                 <div class="col-12">
-                                    <button class="btn btn-primary btn-lg" type="submit">
+                                    <button
+                                        class="btn btn-primary btn-lg"
+                                        type="submit"
+                                        <?= $isPreviewMode
+                                            ? 'disabled aria-disabled="true"'
+                                            : '' ?>
+                                    >
                                         <?= e($quoteSubmitLabel) ?>
                                     </button>
                                 </div>

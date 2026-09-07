@@ -121,6 +121,413 @@ function verify_csrf(
 }
 
 /**
+ * Read an integer quote-spam setting from the application configuration.
+ */
+function dc_quote_spam_setting(
+    string $key,
+    int $default
+): int {
+    $config = app_config(
+        'quote_spam'
+    );
+
+    if (
+        !is_array($config)
+        || !isset($config[$key])
+    ) {
+        return $default;
+    }
+
+    $value = (int) $config[$key];
+
+    return $value > 0
+        ? $value
+        : $default;
+}
+
+/**
+ * Remove stale quote-form timing tokens from the current session.
+ */
+function dc_quote_prune_form_tokens(): void
+{
+    if (
+        !isset($_SESSION['quote_form_tokens'])
+        || !is_array(
+            $_SESSION['quote_form_tokens']
+        )
+    ) {
+        $_SESSION['quote_form_tokens'] = [];
+        return;
+    }
+
+    $maximumAge =
+        dc_quote_spam_setting(
+            'maximum_form_age_seconds',
+            7200
+        );
+
+    $cutoff =
+        time()
+        - $maximumAge;
+
+    foreach (
+        $_SESSION['quote_form_tokens']
+        as $token => $createdAt
+    ) {
+        if (
+            !is_string($token)
+            || !is_numeric($createdAt)
+            || (int) $createdAt < $cutoff
+        ) {
+            unset(
+                $_SESSION[
+                    'quote_form_tokens'
+                ][$token]
+            );
+        }
+    }
+
+    /*
+     * A normal visitor should never accumulate many active form tokens.
+     * Keeping only the newest ten also prevents an abusive client from
+     * growing the session indefinitely by repeatedly loading the page.
+     */
+    if (
+        count(
+            $_SESSION['quote_form_tokens']
+        ) > 10
+    ) {
+        asort(
+            $_SESSION[
+                'quote_form_tokens'
+            ],
+            SORT_NUMERIC
+        );
+
+        $_SESSION['quote_form_tokens'] =
+            array_slice(
+                $_SESSION[
+                    'quote_form_tokens'
+                ],
+                -10,
+                null,
+                true
+            );
+    }
+}
+
+/**
+ * Render a one-time server-generated timing token for the quote form.
+ */
+function dc_quote_form_token_field(): string
+{
+    dc_quote_prune_form_tokens();
+
+    try {
+        $token =
+            bin2hex(
+                random_bytes(32)
+            );
+    } catch (Throwable $exception) {
+        log_message(
+            'Unable to generate quote form timing token: '
+            . $exception->getMessage()
+        );
+
+        return '';
+    }
+
+    $_SESSION[
+        'quote_form_tokens'
+    ][$token] = time();
+
+    return sprintf(
+        '<input type="hidden" '
+        . 'name="quote_form_token" '
+        . 'value="%s">',
+        e($token)
+    );
+}
+
+/**
+ * Validate and consume a submitted quote-form timing token.
+ *
+ * Possible results:
+ *
+ * valid
+ * missing
+ * too_fast
+ * expired
+ */
+function dc_quote_form_timing_status(
+    ?string $token
+): string {
+    if (
+        !is_string($token)
+        || $token === ''
+    ) {
+        return 'missing';
+    }
+
+    if (
+        !isset(
+            $_SESSION[
+                'quote_form_tokens'
+            ][$token]
+        )
+        || !is_numeric(
+            $_SESSION[
+                'quote_form_tokens'
+            ][$token]
+        )
+    ) {
+        return 'missing';
+    }
+
+    $createdAt = (int) (
+        $_SESSION[
+            'quote_form_tokens'
+        ][$token]
+    );
+
+    unset(
+        $_SESSION[
+            'quote_form_tokens'
+        ][$token]
+    );
+
+    $elapsed =
+        time()
+        - $createdAt;
+
+    $minimumSeconds =
+        dc_quote_spam_setting(
+            'minimum_completion_seconds',
+            3
+        );
+
+    $maximumSeconds =
+        dc_quote_spam_setting(
+            'maximum_form_age_seconds',
+            7200
+        );
+
+    if ($elapsed < $minimumSeconds) {
+        return 'too_fast';
+    }
+
+    if ($elapsed > $maximumSeconds) {
+        return 'expired';
+    }
+
+    return 'valid';
+}
+
+/**
+ * Return the network address used for quote-form rate limiting.
+ *
+ * REMOTE_ADDR is used intentionally. Forwarded-IP headers are not trusted
+ * unless the application is explicitly configured behind a trusted proxy.
+ */
+function dc_quote_client_address(): string
+{
+    $address =
+        trim(
+            (string) (
+                $_SERVER[
+                    'REMOTE_ADDR'
+                ]
+                ?? ''
+            )
+        );
+
+    if ($address !== '') {
+        return $address;
+    }
+
+    $sessionId =
+        session_id();
+
+    return $sessionId !== ''
+        ? 'session:' . $sessionId
+        : 'unknown';
+}
+
+/**
+ * Check and record the rolling quote-form rate limit.
+ *
+ * Returns true when the current client has already reached the configured
+ * number of otherwise-valid quote submissions in the current time window.
+ *
+ * Rate-limit storage failures fail open so a filesystem problem cannot
+ * prevent legitimate customers from contacting DC Imprints.
+ */
+function dc_quote_rate_limit_exceeded(): bool
+{
+    $windowSeconds =
+        dc_quote_spam_setting(
+            'rate_limit_window_seconds',
+            600
+        );
+
+    $maximumAttempts =
+        dc_quote_spam_setting(
+            'rate_limit_max_attempts',
+            5
+        );
+
+    $directory =
+        APP_ROOT
+        . '/storage/rate-limits';
+
+    if (
+        !is_dir($directory)
+        && !@mkdir(
+            $directory,
+            0755,
+            true
+        )
+        && !is_dir($directory)
+    ) {
+        log_message(
+            'Quote rate-limit directory could not be created.'
+        );
+
+        return false;
+    }
+
+    $fingerprint =
+        hash(
+            'sha256',
+            dc_quote_client_address()
+        );
+
+    $path =
+        $directory
+        . '/'
+        . $fingerprint
+        . '.json';
+
+    $handle =
+        @fopen(
+            $path,
+            'c+'
+        );
+
+    if ($handle === false) {
+        log_message(
+            'Quote rate-limit file could not be opened.'
+        );
+
+        return false;
+    }
+
+    try {
+        if (!flock($handle, LOCK_EX)) {
+            log_message(
+                'Quote rate-limit file could not be locked.'
+            );
+
+            return false;
+        }
+
+        rewind($handle);
+
+        $contents =
+            stream_get_contents(
+                $handle
+            );
+
+        $timestamps = [];
+
+        if (
+            is_string($contents)
+            && $contents !== ''
+        ) {
+            $decoded =
+                json_decode(
+                    $contents,
+                    true
+                );
+
+            if (is_array($decoded)) {
+                foreach (
+                    $decoded
+                    as $timestamp
+                ) {
+                    if (
+                        is_int($timestamp)
+                        || (
+                            is_string($timestamp)
+                            && ctype_digit(
+                                $timestamp
+                            )
+                        )
+                    ) {
+                        $timestamps[] =
+                            (int) $timestamp;
+                    }
+                }
+            }
+        }
+
+        $now = time();
+        $cutoff =
+            $now
+            - $windowSeconds;
+
+        $timestamps =
+            array_values(
+                array_filter(
+                    $timestamps,
+                    static fn (
+                        int $timestamp
+                    ): bool =>
+                        $timestamp >= $cutoff
+                        && $timestamp <= $now
+                )
+            );
+
+        $exceeded =
+            count($timestamps)
+            >= $maximumAttempts;
+
+        if (!$exceeded) {
+            $timestamps[] = $now;
+        }
+
+        rewind($handle);
+        ftruncate($handle, 0);
+
+        fwrite(
+            $handle,
+            json_encode(
+                $timestamps,
+                JSON_UNESCAPED_SLASHES
+            ) ?: '[]'
+        );
+
+        fflush($handle);
+
+        return $exceeded;
+    } catch (Throwable $exception) {
+        log_message(
+            'Quote rate-limit check failed: '
+            . $exception->getMessage()
+        );
+
+        return false;
+    } finally {
+        @flock(
+            $handle,
+            LOCK_UN
+        );
+
+        fclose($handle);
+    }
+}
+
+/**
  * Store or retrieve a one-time session message.
  *
  * Calling flash('success', 'Saved.') stores a message.

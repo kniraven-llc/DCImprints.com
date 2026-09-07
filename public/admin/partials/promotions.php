@@ -271,7 +271,7 @@ $promotionTimezone =
                                     "
                                 >
                                     <?= $activePromotion !== null
-                                        ? 'Currently Displayed'
+                                        ? 'Displayed in Draft'
                                         : 'Nothing Displayed' ?>
                                 </span>
 
@@ -317,7 +317,7 @@ $promotionTimezone =
                                         mb-0
                                     "
                                 >
-                                    No published promotion of this
+                                    No active draft promotion of this
                                     type is currently within its
                                     scheduled display period.
                                 </p>
@@ -385,7 +385,7 @@ $promotionTimezone =
 
         <p class="small text-body-secondary mb-0">
             Leave both schedule fields blank to display the
-            promotion whenever it is published and becomes the
+            promotion after the website draft is published and it becomes the
             highest-priority active promotion of its type.
         </p>
     </div>
@@ -638,7 +638,7 @@ $promotionTimezone =
                             class="form-check-label"
                             for="new_promotion_active"
                         >
-                            Publish this promotion
+                            Show this promotion after the site draft is published
                         </label>
                     </div>
                 </div>
@@ -1248,7 +1248,7 @@ $promotionTimezone =
                                         class="form-check-label"
                                         for="promotion_active_<?= $promotionId ?>"
                                     >
-                                        Publish this promotion
+                                        Show this promotion after the site draft is published
                                     </label>
                                 </div>
                             </div>
